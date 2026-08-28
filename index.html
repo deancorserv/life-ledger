@@ -676,8 +676,12 @@ function sbFetch(path, opts){
   for(var k in (opts.headers||{})) h[k] = opts.headers[k];
   opts.headers = h;
   return fetch(SB_URL + path, opts).then(function(r){
-    if(!r.ok) return r.text().then(function(t){ throw new Error(r.status + " " + t); });
-    return r.status === 204 ? null : r.json();
+    /* Writes use Prefer: return=minimal, which answers 201 or 204 with an
+       empty body, so never hand an empty string to JSON.parse. */
+    return r.text().then(function(t){
+      if(!r.ok) throw new Error(r.status + " " + t.slice(0,160));
+      return t ? JSON.parse(t) : null;
+    });
   });
 }
 function sbPull(){
