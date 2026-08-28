@@ -1,0 +1,1719 @@
+<title>The Life Ledger</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+
+<style>
+/* ============ TOKENS: light is the bare :root, dark overrides in both states ============ */
+:root{
+  --ground:#E8E3D8;
+  --surface:#F3EFE6;
+  --surface-2:#DED8CA;
+  --ink:#16150F;
+  --muted:#6B665A;
+  --faint:#918B7C;
+  --brass:#8A6021;
+  --brass-soft:rgba(138,96,33,0.13);
+  --oxblood:#8C3A32;
+  --oxblood-soft:rgba(140,58,50,0.12);
+  --moss:#46603A;
+  --moss-soft:rgba(70,96,58,0.13);
+  --line:rgba(22,21,15,0.15);
+  --line-strong:rgba(22,21,15,0.30);
+  --track:rgba(22,21,15,0.10);
+  --shadow:0 1px 2px rgba(22,21,15,0.07), 0 8px 24px rgba(22,21,15,0.06);
+  --focus:#8A6021;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#100F0C;
+    --surface:#1A1814;
+    --surface-2:#24211C;
+    --ink:#EDE8DE;
+    --muted:#948E7F;
+    --faint:#6E6959;
+    --brass:#C9973F;
+    --brass-soft:rgba(201,151,63,0.15);
+    --oxblood:#C4584C;
+    --oxblood-soft:rgba(196,88,76,0.15);
+    --moss:#8CA96F;
+    --moss-soft:rgba(140,169,111,0.15);
+    --line:rgba(237,232,222,0.13);
+    --line-strong:rgba(237,232,222,0.28);
+    --track:rgba(237,232,222,0.10);
+    --shadow:0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.35);
+    --focus:#C9973F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#100F0C;
+  --surface:#1A1814;
+  --surface-2:#24211C;
+  --ink:#EDE8DE;
+  --muted:#948E7F;
+  --faint:#6E6959;
+  --brass:#C9973F;
+  --brass-soft:rgba(201,151,63,0.15);
+  --oxblood:#C4584C;
+  --oxblood-soft:rgba(196,88,76,0.15);
+  --moss:#8CA96F;
+  --moss-soft:rgba(140,169,111,0.15);
+  --line:rgba(237,232,222,0.13);
+  --line-strong:rgba(237,232,222,0.28);
+  --track:rgba(237,232,222,0.10);
+  --shadow:0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.35);
+  --focus:#C9973F;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+h1,h2,h3,h4{font-family:'Oswald',Impact,sans-serif;font-weight:500;text-wrap:balance;margin:0;letter-spacing:0.01em}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 96px}
+
+/* ============ MASTHEAD ============ */
+.masthead{border-bottom:1.5px solid var(--line-strong);padding:34px 0 0;margin-bottom:26px}
+.masthead-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px}
+.logo{display:flex;align-items:baseline;gap:12px}
+.logo h1{font-size:clamp(30px,6vw,46px);font-weight:600;text-transform:uppercase;letter-spacing:0.005em;line-height:0.95}
+.logo .est{font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass);font-weight:600;font-family:'Archivo',sans-serif;white-space:nowrap}
+.tagline{color:var(--muted);font-size:14px;max-width:56ch;margin:10px 0 0}
+.syncpill{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.09em;text-transform:uppercase;
+  padding:5px 10px;border-radius:2px;white-space:nowrap;border:1px solid var(--line);
+  background:var(--track);color:var(--muted);align-self:center
+}
+.syncpill.on{background:var(--moss-soft);color:var(--moss);border-color:transparent}
+.syncpill.off{background:var(--oxblood-soft);color:var(--oxblood);border-color:transparent}
+.syncpill.busy{background:var(--brass-soft);color:var(--brass);border-color:transparent}
+.tabs{display:flex;gap:0;margin-top:26px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  appearance:none;background:none;border:none;border-bottom:2.5px solid transparent;
+  font-family:'Oswald',sans-serif;font-size:14px;font-weight:500;letter-spacing:0.11em;text-transform:uppercase;
+  color:var(--muted);padding:10px 20px 12px;cursor:pointer;white-space:nowrap;transition:color .16s
+}
+.tab:first-child{padding-left:0}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brass)}
+
+/* ============ SHARED BITS ============ */
+.eyebrow{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--faint);font-weight:600}
+.sect{margin-top:38px}
+.sect-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.sect-head h2{font-size:15px;text-transform:uppercase;letter-spacing:0.13em;font-weight:500;color:var(--muted)}
+.sect-head .rule{flex:1;height:1px;background:var(--line)}
+
+.btn{
+  appearance:none;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;font-weight:500;
+  padding:11px 20px;border-radius:2px;cursor:pointer;transition:background .16s,border-color .16s,color .16s;
+  border:1.5px solid var(--line-strong);background:transparent;color:var(--ink)
+}
+.btn:hover{border-color:var(--ink)}
+.btn-primary{background:var(--brass);border-color:var(--brass);color:var(--ground)}
+.btn-primary:hover{background:var(--ink);border-color:var(--ink);color:var(--ground)}
+.btn-danger{color:var(--oxblood);border-color:var(--oxblood-soft)}
+.btn-danger:hover{border-color:var(--oxblood)}
+.btn-sm{padding:7px 13px;font-size:11px}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px}
+
+.badge{
+  display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.09em;
+  padding:3px 7px;border-radius:2px;text-transform:uppercase;font-weight:500;white-space:nowrap
+}
+.badge-warn{background:var(--oxblood-soft);color:var(--oxblood)}
+.badge-good{background:var(--moss-soft);color:var(--moss)}
+.badge-note{background:var(--track);color:var(--muted)}
+.badge-brass{background:var(--brass-soft);color:var(--brass)}
+
+/* ============ WEIGH-IN (TOP THREE) ============ */
+.weighin{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.wcard{
+  background:var(--surface);border:1.5px solid var(--line);border-radius:3px;padding:20px 18px 18px;
+  position:relative;overflow:hidden;display:flex;flex-direction:column;gap:2px
+}
+.wcard.first{border-color:var(--brass);box-shadow:var(--shadow)}
+.wcard.first::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--brass)}
+.wcard .place{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:0.19em;text-transform:uppercase;color:var(--faint);font-weight:600}
+.wcard.first .place{color:var(--brass)}
+.wcard .who{font-family:'Oswald',sans-serif;font-size:clamp(22px,4.4vw,29px);text-transform:uppercase;font-weight:600;line-height:1.06;margin:7px 0 12px;word-break:break-word}
+.wcard .tot{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:38px;font-weight:700;line-height:1;letter-spacing:-0.02em}
+.wcard .tot span{font-size:14px;color:var(--faint);font-weight:400;letter-spacing:0}
+.wcard .wbadges{display:flex;flex-wrap:wrap;gap:5px;margin-top:13px}
+
+/* ============ LEDGER ============ */
+.ledger{border-top:1.5px solid var(--line-strong)}
+.lrow{border-bottom:1px solid var(--line)}
+.lrow-btn{
+  width:100%;display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:16px;
+  background:none;border:none;padding:17px 8px 17px 2px;cursor:pointer;text-align:left;color:inherit;
+  font-family:inherit;font-size:inherit;transition:background .14s
+}
+.lrow-btn:hover{background:var(--brass-soft)}
+.lrank{font-family:'Oswald',sans-serif;font-size:26px;font-weight:600;color:var(--faint);line-height:1;font-variant-numeric:tabular-nums}
+.lrow.top .lrank{color:var(--brass)}
+.lname{font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;font-weight:500;line-height:1.12;word-break:break-word}
+.lmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;align-items:center}
+.lmeta .age{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);letter-spacing:0.04em}
+.lscore{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:31px;font-weight:700;letter-spacing:-0.02em;line-height:1;text-align:right}
+
+.pillars{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;padding:0 8px 17px 62px}
+.pil{display:flex;flex-direction:column;gap:5px;min-width:0}
+.pil-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.pil-lab{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.11em;color:var(--faint);text-transform:uppercase}
+.pil-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.track{height:4px;background:var(--track);border-radius:2px;overflow:hidden}
+.fill{height:100%;background:var(--ink);border-radius:2px;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+.fill.brass{background:var(--brass)}
+.fill.low{background:var(--oxblood)}
+
+/* expanded breakdown */
+.detail{display:none;padding:6px 8px 30px 62px;border-top:1px dashed var(--line)}
+.lrow.open .detail{display:block}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:24px;margin-top:20px}
+.dcard h3{font-size:13px;text-transform:uppercase;letter-spacing:0.13em;color:var(--muted);font-weight:500;
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  padding-bottom:7px;border-bottom:1px solid var(--line);margin-bottom:11px}
+.dcard h3 b{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--ink);font-weight:700;letter-spacing:0}
+.drow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:6px 0;align-items:baseline}
+.drow-lab{font-size:13px;color:var(--ink)}
+.drow-raw{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);grid-column:1;letter-spacing:0.01em}
+.drow-pts{font-family:'JetBrains Mono',monospace;font-size:13px;font-variant-numeric:tabular-nums;grid-row:1/3;grid-column:2;align-self:center;font-weight:500}
+.drow.dq .drow-lab,.drow.dq .drow-pts{color:var(--oxblood)}
+.dnote{font-size:12.5px;color:var(--muted);margin-top:14px;padding:11px 13px;background:var(--surface-2);border-radius:3px;border-left:2px solid var(--brass)}
+.dnote b{color:var(--ink);font-weight:600}
+.dact{display:flex;gap:9px;margin-top:22px;flex-wrap:wrap}
+
+/* ============ EMPTY ============ */
+.empty{text-align:center;padding:76px 20px;border:1.5px dashed var(--line-strong);border-radius:3px}
+.empty h2{font-size:clamp(22px,4vw,30px);text-transform:uppercase;margin-bottom:12px;font-weight:600}
+.empty p{color:var(--muted);max-width:44ch;margin:0 auto 26px;font-size:14.5px}
+
+/* ============ FORM ============ */
+.form-wrap{max-width:760px}
+fieldset{border:none;border-top:1.5px solid var(--line-strong);margin:0 0 6px;padding:22px 0 26px}
+legend{
+  font-family:'Oswald',sans-serif;font-size:15px;text-transform:uppercase;letter-spacing:0.13em;
+  font-weight:500;padding:0 12px 0 0;color:var(--ink)
+}
+.legend-note{font-size:12.5px;color:var(--muted);margin:-4px 0 18px;max-width:62ch;line-height:1.5}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:12px;letter-spacing:0.05em;color:var(--muted);text-transform:uppercase;font-weight:600}
+.field .hint{font-size:11.5px;color:var(--faint);line-height:1.4;text-transform:none;letter-spacing:0;font-weight:400}
+input[type=text],input[type=number],select{
+  font-family:'JetBrains Mono',monospace;font-size:14px;font-variant-numeric:tabular-nums;
+  background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-radius:2px;
+  padding:10px 11px;width:100%;transition:border-color .15s
+}
+select{font-family:'Archivo',sans-serif;font-variant-numeric:normal}
+input:hover,select:hover{border-color:var(--line-strong)}
+input:focus,select:focus{border-color:var(--brass);outline:none;box-shadow:0 0 0 3px var(--brass-soft)}
+input[type=range]{width:100%;accent-color:var(--brass)}
+.gate{
+  display:flex;align-items:flex-start;gap:11px;padding:14px 16px;background:var(--surface);
+  border:1.5px solid var(--line);border-radius:3px;margin-bottom:16px;cursor:pointer
+}
+.gate:hover{border-color:var(--line-strong)}
+.gate input{margin:2px 0 0;width:17px;height:17px;accent-color:var(--brass);flex:none;cursor:pointer}
+.gate-txt strong{display:block;font-size:14px;font-weight:600;margin-bottom:2px}
+.gate-txt span{font-size:12.5px;color:var(--muted);line-height:1.45}
+.gated{transition:opacity .2s}
+.gated[data-off="1"]{opacity:0.32;pointer-events:none}
+.dqflag{
+  display:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--oxblood);
+  background:var(--oxblood-soft);padding:9px 12px;border-radius:2px;margin-bottom:14px;letter-spacing:0.03em
+}
+.dqflag[data-on="1"]{display:block}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:9px}
+.chk{display:flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer;padding:9px 11px;background:var(--surface);border:1.5px solid var(--line);border-radius:2px}
+.chk:hover{border-color:var(--line-strong)}
+.chk input{width:16px;height:16px;accent-color:var(--brass);flex:none;cursor:pointer}
+.slider-row{display:flex;align-items:center;gap:13px}
+.slider-row output{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;min-width:26px;text-align:right}
+.savebar{
+  position:sticky;bottom:0;background:var(--ground);border-top:1.5px solid var(--line-strong);
+  padding:16px 0;display:flex;gap:11px;flex-wrap:wrap;align-items:center;margin-top:14px
+}
+.savebar .live{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)}
+.savebar .live b{font-size:20px;color:var(--ink);font-weight:700}
+
+/* ============ RULEBOOK ============ */
+.rb{max-width:760px}
+.wrow{display:grid;grid-template-columns:130px 1fr 54px;align-items:center;gap:15px;padding:11px 0;border-bottom:1px solid var(--line)}
+.wrow span:first-child{font-family:'Oswald',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:0.08em}
+.wrow output{font-family:'JetBrains Mono',monospace;font-size:14px;text-align:right;font-weight:600}
+.prose p{color:var(--muted);font-size:14px;max-width:66ch;line-height:1.65}
+.prose b{color:var(--ink);font-weight:600}
+.prose ul{color:var(--muted);font-size:14px;max-width:66ch;line-height:1.65;padding-left:19px}
+.prose li{margin-bottom:7px}
+.prose li b{color:var(--ink)}
+table.imp{width:100%;border-collapse:collapse;font-size:13.5px}
+table.imp th{text-align:left;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint);padding:0 0 9px;font-weight:600}
+table.imp th:last-child{text-align:right}
+table.imp td{padding:9px 0;border-top:1px solid var(--line);vertical-align:middle}
+table.imp td:last-child{text-align:right;width:130px}
+table.imp input{text-align:right}
+.scroll-x{overflow-x:auto}
+
+/* ============ TOAST ============ */
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,110%);
+  background:var(--ink);color:var(--ground);padding:13px 20px;border-radius:3px;
+  font-size:13.5px;font-weight:500;box-shadow:var(--shadow);z-index:60;
+  transition:transform .3s cubic-bezier(.2,.8,.3,1);max-width:min(520px,90vw);text-align:center
+}
+.toast[data-show="1"]{transform:translate(-50%,0)}
+
+.hidden{display:none !important}
+
+@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.lrow,.wcard{animation:rise .42s both cubic-bezier(.2,.7,.3,1)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+@media (max-width:640px){
+  .lrow-btn{grid-template-columns:34px minmax(0,1fr) auto;gap:11px}
+  .lrank{font-size:20px}
+  .lname{font-size:18px}
+  .lscore{font-size:25px}
+  .pillars{grid-template-columns:repeat(3,1fr);padding-left:45px}
+  .detail{padding-left:16px}
+  .wrow{grid-template-columns:96px 1fr 46px;gap:10px}
+}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead-top">
+      <div class="logo">
+        <h1>The Life Ledger</h1>
+        <span class="est">Standings &middot; Open Division</span>
+      </div>
+      <span class="syncpill" id="sync-pill">Connecting</span>
+    </div>
+    <p class="tagline">One ranking, six pillars, current form only. Historic personal bests do not count and salary is never asked for. Everything is scored relative to bodyweight, age, and what you actually pay for yourself.</p>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-view="board">Standings</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="entry">Enter Numbers</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="rules">The Rulebook</button>
+    </nav>
+  </header>
+
+  <!-- ============ BOARD ============ -->
+  <main id="view-board">
+    <div id="board-body"></div>
+  </main>
+
+  <!-- ============ ENTRY ============ -->
+  <main id="view-entry" class="hidden">
+    <div class="form-wrap">
+      <div class="sect-head" style="margin-top:6px">
+        <h2 id="form-title">New Entry</h2><div class="rule"></div>
+      </div>
+
+      <fieldset>
+        <legend>Identity</legend>
+        <div class="fgrid">
+          <div class="field">
+            <label for="f-name">Name</label>
+            <input type="text" id="f-name" placeholder="Who is this" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="f-age">Age</label>
+            <input type="number" id="f-age" min="14" max="90" value="27">
+          </div>
+          <div class="field">
+            <label for="f-sex">Benchmark set</label>
+            <select id="f-sex">
+              <option value="m">Male standards</option>
+              <option value="f">Female standards</option>
+            </select>
+            <span class="hint">Strength and running are scored against different curves.</span>
+          </div>
+          <div class="field">
+            <label for="f-bw">Bodyweight (kg)</label>
+            <input type="number" id="f-bw" min="30" max="250" step="0.5" value="80">
+          </div>
+          <div class="field">
+            <label for="f-receipts">Receipts</label>
+            <select id="f-receipts">
+              <option value="verified">Verified by the group</option>
+              <option value="partial">Partly evidenced</option>
+              <option value="claimed" selected>Claimed, no proof</option>
+            </select>
+            <span class="hint">Unproven numbers take a haircut off the final total.</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Physical</legend>
+        <p class="legend-note">Lifts are scored as multiples of bodyweight, then run through masters age coefficients, so a strong 45 year old is not punished for being 45. The 5km is age graded the same way.</p>
+
+        <label class="gate">
+          <input type="checkbox" id="f-trains" checked>
+          <span class="gate-txt"><strong>Currently training</strong><span>In the gym now, not "used to lift". Untick this and both lifts score zero. No historic weights.</span></span>
+        </label>
+        <div class="dqflag" id="dq-lift">Strength disqualified. Not currently training, so bench and squat score 0.</div>
+
+        <div class="gated" id="grp-lifts" style="margin-bottom:18px">
+          <div class="fgrid">
+            <div class="field">
+              <label for="f-sessions">Sessions per week</label>
+              <input type="number" id="f-sessions" min="0" max="14" value="4">
+            </div>
+            <div class="field">
+              <label for="f-bench">Bench press, best set (kg)</label>
+              <input type="number" id="f-bench" min="0" max="400" step="2.5" value="80">
+              <span class="hint">Working single you could hit today.</span>
+            </div>
+            <div class="field">
+              <label for="f-squat">Squat, best set (kg)</label>
+              <input type="number" id="f-squat" min="0" max="500" step="2.5" value="110">
+              <span class="hint">Full depth. Half squats do not count.</span>
+            </div>
+          </div>
+        </div>
+
+        <label class="gate">
+          <input type="checkbox" id="f-ran" checked>
+          <span class="gate-txt"><strong>Run a 5km in the last three months</strong><span>Same rule as the lifts. A time from two years ago is not current form.</span></span>
+        </label>
+        <div class="dqflag" id="dq-run">Cardio disqualified. No recent 5km, so the run scores 0.</div>
+
+        <div class="gated" id="grp-run">
+          <div class="fgrid">
+            <div class="field">
+              <label for="f-5k">5km time (mm:ss)</label>
+              <input type="text" id="f-5k" value="26:00" placeholder="26:00" inputmode="numeric">
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Financial</legend>
+        <p class="legend-note">No salary anywhere in here. Only what is actually left at the end of the month, and then the market value of whatever you get for free (a room, food, a phone on someone else's contract) is deducted from that. It is the only way the comparison is honest.</p>
+        <div class="fgrid">
+          <div class="field">
+            <label for="f-cashflow">Cash left at end of month</label>
+            <input type="number" id="f-cashflow" step="500" value="6000">
+            <span class="hint">What is still there after everything has gone out. Can be negative.</span>
+          </div>
+          <div class="field">
+            <label for="f-costs">Monthly cost of living</label>
+            <input type="number" id="f-costs" min="0" step="500" value="18000">
+            <span class="hint">What it costs to be you for a month. Used for runway and net worth, never as income.</span>
+          </div>
+          <div class="field">
+            <label for="f-savings">Liquid savings</label>
+            <input type="number" id="f-savings" min="0" step="1000" value="40000">
+            <span class="hint">Cash you could reach this week.</span>
+          </div>
+          <div class="field">
+            <label for="f-networth">Net worth</label>
+            <input type="number" id="f-networth" step="1000" value="90000">
+            <span class="hint">Assets minus debts. Can be negative.</span>
+          </div>
+          <div class="field">
+            <label for="f-baddebt">Bad debt total</label>
+            <input type="number" id="f-baddebt" min="0" step="1000" value="0">
+            <span class="hint">Credit cards, store accounts, personal loans, buy now pay later. Not a bond.</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Independence</legend>
+        <p class="legend-note">Scored on its own and used to correct the financial pillar. Living rent free inflates your cash flow, so it gets charged back at market rate in the Rulebook.</p>
+        <div class="fgrid">
+          <div class="field">
+            <label for="f-housing">Housing</label>
+            <select id="f-housing"></select>
+          </div>
+          <div class="field">
+            <label for="f-food">Food</label>
+            <select id="f-food"></select>
+          </div>
+          <div class="field">
+            <label for="f-transport">Transport</label>
+            <select id="f-transport"></select>
+          </div>
+          <div class="field">
+            <label for="f-emergency">Could you cover a surprise R25,000 tomorrow</label>
+            <select id="f-emergency"></select>
+          </div>
+        </div>
+        <div class="fgrid" style="margin-top:17px">
+          <div class="field">
+            <label for="f-phone">Phone</label>
+            <select id="f-phone"></select>
+          </div>
+          <div class="field">
+            <label for="f-phone-amt">Phone contract, per month</label>
+            <input type="number" id="f-phone-amt" min="0" step="50" value="0">
+            <span class="hint">Leave at zero if you paid cash.</span>
+          </div>
+          <div class="field">
+            <label for="f-laptop">Laptop</label>
+            <select id="f-laptop"></select>
+          </div>
+          <div class="field">
+            <label for="f-laptop-amt">Laptop payment, per month</label>
+            <input type="number" id="f-laptop-amt" min="0" step="50" value="0">
+            <span class="hint">Leave at zero if you paid cash.</span>
+          </div>
+        </div>
+        <div class="field" style="margin-top:17px">
+          <label>Accounts in your own name, paid by you</label>
+          <div class="checks" id="f-bills"></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Education</legend>
+        <p class="legend-note">South African NQF level, then weighted by field. Engineering, medicine, accounting, law and actuarial science sit at the top of the ratio. The field weighting only applies from NQF 5 upward, so a matric is scored on the level alone.</p>
+        <div class="fgrid">
+          <div class="field">
+            <label for="f-nqf">Highest NQF level</label>
+            <select id="f-nqf"></select>
+          </div>
+          <div class="field">
+            <label for="f-field">Degree or field</label>
+            <select id="f-field"></select>
+          </div>
+          <div class="field">
+            <label for="f-edu-complete" style="margin-bottom:2px">Completed</label>
+            <label class="chk"><input type="checkbox" id="f-edu-complete" checked><span>Finished, not still studying</span></label>
+            <span class="hint">Still in progress scores at 70 percent.</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Gaming</legend>
+        <p class="legend-note">Only the games you actually play are scored, and the pillar is the average across them. Tick nothing and the pillar is zero. Stats are lifetime from your own tracker, so this is the easiest place in the whole board to get caught lying.</p>
+
+        <label class="gate">
+          <input type="checkbox" id="f-plays-fortnite">
+          <span class="gate-txt"><strong>Fortnite</strong><span>Solo win rate as a percentage. Around 1 percent is average, 5 is good, 15 and up is genuinely rare.</span></span>
+        </label>
+        <div class="gated" id="grp-fortnite" data-off="1" style="margin-bottom:16px">
+          <div class="fgrid">
+            <div class="field">
+              <label for="f-fortnite">Solo win rate, percent</label>
+              <input type="number" id="f-fortnite" min="0" max="100" step="0.1" value="3">
+            </div>
+          </div>
+        </div>
+
+        <label class="gate">
+          <input type="checkbox" id="f-plays-cod">
+          <span class="gate-txt"><strong>Call of Duty</strong><span>Lifetime kill/death ratio. 1.0 is the middle of the pack, 2.0 is very good.</span></span>
+        </label>
+        <div class="gated" id="grp-cod" data-off="1" style="margin-bottom:16px">
+          <div class="fgrid">
+            <div class="field">
+              <label for="f-cod">Kill/death ratio</label>
+              <input type="number" id="f-cod" min="0" max="15" step="0.01" value="1.1">
+            </div>
+          </div>
+        </div>
+
+        <label class="gate">
+          <input type="checkbox" id="f-plays-r6">
+          <span class="gate-txt"><strong>Rainbow Six Siege</strong><span>Kill/death ratio. Siege runs lower than Call of Duty, so it is scored on its own curve.</span></span>
+        </label>
+        <div class="gated" id="grp-r6" data-off="1">
+          <div class="fgrid">
+            <div class="field">
+              <label for="f-r6">Kill/death ratio</label>
+              <input type="number" id="f-r6" min="0" max="15" step="0.01" value="1.0">
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Spiritual</legend>
+        <p class="legend-note">Faith agnostic. Practice covers church, mosque, prayer, meditation or scripture, whatever yours is. Service and vices are the parts nobody can fake for long.</p>
+        <div class="fgrid">
+          <div class="field">
+            <label for="f-practice">Practice consistency</label>
+            <select id="f-practice"></select>
+          </div>
+          <div class="field">
+            <label for="f-relationship">Relationship</label>
+            <select id="f-relationship"></select>
+          </div>
+          <div class="field">
+            <label for="f-giving">Giving, percent of income</label>
+            <input type="number" id="f-giving" min="0" max="100" step="0.5" value="0">
+          </div>
+          <div class="field">
+            <label for="f-volunteer">Volunteering, hours per month</label>
+            <input type="number" id="f-volunteer" min="0" max="200" value="0">
+          </div>
+          <div class="field">
+            <label for="f-drinks">Drinks per week</label>
+            <input type="number" id="f-drinks" min="0" max="100" value="4">
+          </div>
+          <div class="field">
+            <label for="f-gambling">Gambling per month</label>
+            <input type="number" id="f-gambling" min="0" step="50" value="0">
+          </div>
+          <div class="field">
+            <label for="f-smokes" style="margin-bottom:2px">Smoking or vaping</label>
+            <label class="chk"><input type="checkbox" id="f-smokes"><span>Yes, currently</span></label>
+          </div>
+        </div>
+        <div class="fgrid" style="margin-top:17px">
+          <div class="field">
+            <label for="f-purpose">Sense of purpose</label>
+            <div class="slider-row"><input type="range" id="f-purpose" min="1" max="10" value="6"><output id="o-purpose">6</output></div>
+          </div>
+          <div class="field">
+            <label for="f-stress">Handling stress</label>
+            <div class="slider-row"><input type="range" id="f-stress" min="1" max="10" value="6"><output id="o-stress">6</output></div>
+          </div>
+          <div class="field">
+            <label for="f-rel">Close relationships</label>
+            <div class="slider-row"><input type="range" id="f-rel" min="1" max="10" value="6"><output id="o-rel">6</output></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="savebar">
+        <button class="btn btn-primary" id="btn-save">Save to board</button>
+        <button class="btn" id="btn-cancel">Cancel</button>
+        <button class="btn btn-danger btn-sm hidden" id="btn-delete">Remove</button>
+        <span class="live">Score <b id="live-score" class="num">0.0</b></span>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ RULEBOOK ============ -->
+  <main id="view-rules" class="hidden">
+    <div class="rb">
+
+      <div class="sect" style="margin-top:6px">
+        <div class="sect-head"><h2>Pillar weights</h2><div class="rule"></div></div>
+        <p class="prose" style="margin-top:0">Argue about these instead of the numbers. They always normalise to 100 percent.</p>
+        <div id="weight-rows"></div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-head"><h2>Imputed cost of living free</h2><div class="rule"></div></div>
+        <p class="prose" style="margin-top:0">If someone else pays it, we charge you the market rate before scoring your cash flow. Set these to whatever a room and a plate actually cost where you live.</p>
+        <div class="scroll-x">
+          <table class="imp"><thead><tr><th>What you get for free</th><th>Charged back per month</th></tr></thead>
+          <tbody id="imp-rows"></tbody></table>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-head"><h2>How each pillar is scored</h2><div class="rule"></div></div>
+        <div class="prose">
+          <p><b>Physical.</b> Bench and squat are converted to bodyweight multiples, then multiplied by a masters age coefficient so an older lifter is compared against what is realistic at that age. The 5km is age graded the same way and then scored against distance running benchmarks. Stop training and both lifts go to zero, whatever you used to do. No recent 5km and the run goes to zero. Split inside the pillar: squat 35, run 35, bench 30.</p>
+          <p><b>Financial.</b> Salary is not collected anywhere. You enter what is actually left at the end of the month, and everything in the table above is charged back against it. That adjusted figure is compared to what someone your age should be clearing. Because there is no income to divide by, discipline is measured as banked against burn, meaning how many months of living costs you put away for every month you live. Runway is liquid savings divided by your true monthly cost. Net worth is expressed as years of your own life you own outright, against a target that rises about a quarter of a year for every year you have been an adult. Bad debt subtracts up to 25 points, measured in months of your cost of living.</p>
+          <p><b>Independence.</b> Housing, food, transport, accounts in your own name, whether your phone and laptop are paid for outright, and whether you could absorb a real emergency without phoning family. A contract counts for less than cash, and a bigger contract counts for less than a small one. This is deliberately double counted with the financial pillar. The charge back makes the money comparison fair, this pillar scores the state itself.</p>
+          <p><b>Education.</b> Your highest South African NQF level sets the base, from NQF 1 at Grade 9 through NQF 4 for matric to NQF 10 for a doctorate. From NQF 5 upward that base is multiplied by a field weighting. Engineering, medicine, accounting, law and actuarial science sit at 1.00. Computer science, pharmacy, architecture and the natural sciences follow just behind. Business, teaching, psychology and marketing sit lower, and humanities and arts sit lowest. An artisan trade qualification is rated at 0.85, above general business, because in this country it is worth more than the paper suggests. Below NQF 5 the field is ignored and only the level counts. A qualification still in progress scores at 70 percent.</p>
+          <p><b>Spiritual.</b> Practice consistency, giving and service, vice load (alcohol, smoking, gambling), relationship status, and three self reported readings on purpose, stress and close relationships. The self reported part is the only soft input in the whole system, which is why it carries a small share.</p>
+          <p><b>Gaming.</b> Fortnite solo win rate, Call of Duty kill/death and Rainbow Six Siege kill/death, each on its own curve because a 1.5 in Siege is not a 1.5 in Call of Duty. Only the games you tick are scored and the pillar is the average across them, so playing one game well is not punished. Tick nothing and the pillar is zero. This carries the smallest default weight of the six, and it is the easiest number in the system to check on someone's tracker.</p>
+          <p><b>Receipts.</b> Verified numbers score at full value. Partly evidenced loses 5 percent of the total. Pure claims lose 12 percent. Enough to decide a close one.</p>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-head"><h2>The board</h2><div class="rule"></div></div>
+        <div class="btn-row">
+          <button class="btn" id="btn-refresh">Pull latest board</button>
+          <button class="btn" id="btn-export">Copy board as text</button>
+          <button class="btn" id="btn-export-json">Copy backup data</button>
+          <button class="btn" id="btn-import">Paste backup data</button>
+          <button class="btn btn-danger" id="btn-reset">Reset all defaults</button>
+        </div>
+        <p class="prose" id="sync-note" style="margin-top:16px"></p>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* Shared board. Publishable key, open by design: anyone with the link can read
+   and write the standings. There is nothing here but the group chat's own numbers. */
+var SB_URL = "https://dplbfhwqbmnzmrncxain.supabase.co/rest/v1/";
+var SB_KEY = "sb_publishable_QwL0Yl7Ea6-pTo9SNrOWFQ_GHtADKYZ";
+var POLL_MS = 20000;
+
+function sbFetch(path, opts){
+  opts = opts || {};
+  var h = {apikey:SB_KEY, Authorization:"Bearer "+SB_KEY, "Content-Type":"application/json"};
+  for(var k in (opts.headers||{})) h[k] = opts.headers[k];
+  opts.headers = h;
+  return fetch(SB_URL + path, opts).then(function(r){
+    if(!r.ok) return r.text().then(function(t){ throw new Error(r.status + " " + t); });
+    return r.status === 204 ? null : r.json();
+  });
+}
+function sbPull(){
+  return Promise.all([
+    sbFetch("ledger_people?select=id,name,data&order=id.asc"),
+    sbFetch("ledger_settings?id=eq.1&select=data")
+  ]).then(function(res){
+    var people = (res[0] || []).map(function(row){
+      var d = row.data || {};
+      d.id = row.id; d.name = row.name;
+      return d;
+    });
+    var st = res[1] && res[1][0] && res[1][0].data;
+    return {people:people, settings:(st && Object.keys(st).length) ? st : null};
+  });
+}
+function sbUpsertPerson(p){
+  return sbFetch("ledger_people", {
+    method:"POST",
+    headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
+    body: JSON.stringify({id:p.id, name:p.name, data:p})
+  });
+}
+function sbDeletePerson(id){
+  return sbFetch("ledger_people?id=eq." + encodeURIComponent(id), {
+    method:"DELETE", headers:{Prefer:"return=minimal"}
+  });
+}
+function sbPutSettings(s){
+  return sbFetch("ledger_settings", {
+    method:"POST",
+    headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
+    body: JSON.stringify({id:1, data:s})
+  });
+}
+
+/* ============================================================
+   OPTION TABLES
+   ============================================================ */
+var HOUSING = [
+  {k:"own_paid",   t:"Own home, bond paid off",            s:100, imp:0},
+  {k:"own_bond",   t:"Own home, paying a bond",            s:92,  imp:0},
+  {k:"rent_solo",  t:"Renting my own place",               s:88,  imp:0},
+  {k:"partner",    t:"With a partner, both contributing",  s:85,  imp:0},
+  {k:"share",      t:"Renting, sharing with mates",        s:78,  imp:0},
+  {k:"par_market", t:"With parents, paying market rent",   s:55,  imp:0},
+  {k:"par_token",  t:"With parents, paying token rent",    s:30,  imp:"rent_token"},
+  {k:"par_free",   t:"With parents, paying nothing",       s:0,   imp:"rent_free"}
+];
+var FOOD = [
+  {k:"own_cook", t:"I buy it and I cook it",        s:100, imp:0},
+  {k:"own_out",  t:"I buy it, mostly eating out",   s:82,  imp:0},
+  {k:"split",    t:"Split with parents",            s:40,  imp:"food_part"},
+  {k:"parents",  t:"I eat my parents' food",        s:0,   imp:"food_free"}
+];
+var TRANSPORT = [
+  {k:"own_paid",  t:"Own vehicle, paid off",              s:100, imp:0},
+  {k:"own_fin",   t:"Own vehicle, financed",              s:82,  imp:0},
+  {k:"public",    t:"Public transport by choice",         s:70,  imp:0},
+  {k:"own_fam",   t:"Own vehicle, family pays insurance", s:55,  imp:"bills_family"},
+  {k:"fam_car",   t:"I drive the family car",             s:25,  imp:"vehicle_family"},
+  {k:"lifts",     t:"I depend on lifts",                  s:0,   imp:0}
+];
+var EMERGENCY = [
+  {k:"yes_easy", t:"Yes, straight out of savings", s:100},
+  {k:"yes_hurt", t:"Yes, but it would hurt",       s:75},
+  {k:"credit",   t:"Only by using credit",         s:35},
+  {k:"family",   t:"No, I would ask family",       s:0}
+];
+var PRACTICE = [
+  {k:"daily",   t:"Daily",                s:100},
+  {k:"weekly3", t:"Several times a week",  s:85},
+  {k:"weekly",  t:"Weekly",                s:70},
+  {k:"monthly", t:"Monthly",               s:40},
+  {k:"rare",    t:"A few times a year",    s:15},
+  {k:"never",   t:"Never",                 s:0}
+];
+var BILLS = [
+  {k:"phone",   t:"Phone contract"},
+  {k:"medical", t:"Medical aid"},
+  {k:"carins",  t:"Vehicle insurance"},
+  {k:"net",     t:"Home internet"},
+  {k:"subs",    t:"Streaming and subs"}
+];
+var PHONE = [
+  {k:"cash",     t:"Bought outright, cash",        s:100, imp:0},
+  {k:"contract", t:"On my own contract",           s:70,  imp:0},
+  {k:"family",   t:"On the family contract",       s:0,   imp:"phone_family"}
+];
+var LAPTOP = [
+  {k:"cash",     t:"Bought outright, cash",        s:100, imp:0},
+  {k:"contract", t:"Financed or on contract by me",s:68,  imp:0},
+  {k:"family",   t:"Someone else bought it",       s:10,  imp:"laptop_family"},
+  {k:"none",     t:"I do not have one",            s:35,  imp:0}
+];
+var RELATIONSHIP = [
+  {k:"married",  t:"Married",                s:100},
+  {k:"engaged",  t:"Engaged",                s:95},
+  {k:"gf",       t:"Girlfriend or partner",  s:82},
+  {k:"dating",   t:"Seeing someone",         s:58},
+  {k:"single_c", t:"Single by choice",       s:45},
+  {k:"single",   t:"Single",                 s:32}
+];
+/* South African NQF. lvl gates whether the field weighting applies. */
+var NQF = [
+  {k:"nqf10", lvl:10, t:"NQF 10, Doctorate or PhD",                  s:100},
+  {k:"nqf9",  lvl:9,  t:"NQF 9, Master's degree",                    s:93},
+  {k:"nqf8",  lvl:8,  t:"NQF 8, Honours or postgraduate diploma",    s:85},
+  {k:"nqf7",  lvl:7,  t:"NQF 7, Bachelor's degree or advanced dip",  s:76},
+  {k:"nqf6",  lvl:6,  t:"NQF 6, Diploma or advanced certificate",    s:64},
+  {k:"nqf5",  lvl:5,  t:"NQF 5, Higher certificate",                 s:52},
+  {k:"nqf4",  lvl:4,  t:"NQF 4, Matric",                             s:40},
+  {k:"nqf3",  lvl:3,  t:"NQF 3, Grade 11",                           s:26},
+  {k:"nqf2",  lvl:2,  t:"NQF 2, Grade 10",                           s:16},
+  {k:"nqf1",  lvl:1,  t:"NQF 1, Grade 9",                            s:8}
+];
+/* Field weighting. Applied at NQF 5 and above only. */
+var FIELDS = [
+  {k:"eng",    t:"Engineering",                        m:1.00},
+  {k:"med",    t:"Medicine or dentistry",              m:1.00},
+  {k:"acc",    t:"Accounting or chartered accountancy",m:1.00},
+  {k:"law",    t:"Law",                                m:1.00},
+  {k:"act",    t:"Actuarial science",                  m:1.00},
+  {k:"cs",     t:"Computer science",                   m:0.96},
+  {k:"pharm",  t:"Pharmacy or veterinary",             m:0.94},
+  {k:"arch",   t:"Architecture or quantity surveying", m:0.92},
+  {k:"sci",    t:"Natural sciences or mathematics",    m:0.90},
+  {k:"fin",    t:"Finance or economics",               m:0.88},
+  {k:"it",     t:"IT or information systems",          m:0.86},
+  {k:"trade",  t:"Artisan trade qualification",        m:0.85},
+  {k:"nurse",  t:"Nursing or allied health",           m:0.84},
+  {k:"biz",    t:"Business, commerce or management",   m:0.76},
+  {k:"edu",    t:"Education or teaching",              m:0.75},
+  {k:"psy",    t:"Psychology",                         m:0.74},
+  {k:"agri",   t:"Agriculture",                        m:0.74},
+  {k:"mkt",    t:"Marketing or communications",        m:0.68},
+  {k:"hum",    t:"Humanities or social sciences",      m:0.66},
+  {k:"arts",   t:"Arts, design or sport science",      m:0.64},
+  {k:"none",   t:"No field, school only",              m:1.00}
+];
+
+var DEFAULT_SETTINGS = {
+  currency: "R",
+  weights: {physical:25, financial:25, independence:18, education:12, spiritual:12, gaming:8},
+  imputed: {
+    rent_free:      {t:"A room at your parents, rent free",        v:6500},
+    rent_token:     {t:"A room at your parents, token rent",       v:3200},
+    food_free:      {t:"Eating your parents' food",                v:3200},
+    food_part:      {t:"Half your food from your parents",         v:1600},
+    bills_family:   {t:"Insurance or bills on a family account",   v:1400},
+    vehicle_family: {t:"Driving the family car",                   v:3800},
+    phone_family:   {t:"A phone on the family contract",           v:550},
+    laptop_family:  {t:"A laptop somebody else paid for",          v:700}
+  }
+};
+
+var PILLAR_META = [
+  {k:"physical",     lab:"PHY", full:"Physical"},
+  {k:"financial",    lab:"FIN", full:"Financial"},
+  {k:"independence", lab:"IND", full:"Independence"},
+  {k:"education",    lab:"EDU", full:"Education"},
+  {k:"spiritual",    lab:"SPI", full:"Spiritual"},
+  {k:"gaming",       lab:"GAM", full:"Gaming"}
+];
+
+/* ============================================================
+   SCORING MATHS
+   ============================================================ */
+function lerp(x, pts){
+  if(!isFinite(x)) return 0;
+  if(x <= pts[0][0]) return pts[0][1];
+  if(x >= pts[pts.length-1][0]) return pts[pts.length-1][1];
+  for(var i=0;i<pts.length-1;i++){
+    var a=pts[i], b=pts[i+1];
+    if(x>=a[0] && x<=b[0]) return a[1] + (b[1]-a[1]) * ((x-a[0])/(b[0]-a[0]));
+  }
+  return 0;
+}
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+function n(v){ v = parseFloat(v); return isFinite(v) ? v : 0; }
+
+/* Masters style age coefficient. Multiplies the lifted ratio upward with age. */
+function strengthAgeCoef(age){
+  if(age < 20) return 1 + 0.015*(20-age);
+  if(age <= 30) return 1;
+  if(age <= 40) return 1 + 0.0100*(age-30);
+  if(age <= 50) return 1.10 + 0.0140*(age-40);
+  if(age <= 60) return 1.24 + 0.0200*(age-50);
+  return 1.44 + 0.0300*(age-60);
+}
+/* Running age factor. Multiplies actual time downward with age to get a graded time. */
+function runAgeFactor(age){
+  if(age < 20) return 1 - 0.006*(20-age);
+  if(age <= 30) return 1;
+  if(age <= 40) return 1 - 0.006*(age-30);
+  if(age <= 50) return 0.94 - 0.008*(age-40);
+  if(age <= 60) return 0.86 - 0.010*(age-50);
+  return 0.76 - 0.013*(age-60);
+}
+
+var BENCH_M = [[0.50,0],[0.75,25],[1.00,50],[1.25,68],[1.50,82],[1.75,92],[2.00,100]];
+var BENCH_F = [[0.25,0],[0.40,25],[0.55,50],[0.70,68],[0.85,82],[1.00,92],[1.20,100]];
+var SQUAT_M = [[0.75,0],[1.00,20],[1.25,38],[1.50,55],[1.75,70],[2.00,82],[2.50,95],[2.75,100]];
+var SQUAT_F = [[0.40,0],[0.60,20],[0.80,38],[1.00,55],[1.25,70],[1.50,85],[1.85,100]];
+/* seconds -> points, times ascending so scores descend */
+var RUN_M = [[900,100],[1050,92],[1200,82],[1350,70],[1500,58],[1680,44],[1920,28],[2280,12],[2700,0]];
+var RUN_F = [[1005,100],[1175,92],[1340,82],[1510,70],[1680,58],[1880,44],[2150,28],[2550,12],[3020,0]];
+
+/* Gaming. Solo win rate is a percentage, the other two are kill/death ratios. */
+var FORTNITE = [[0,0],[1,20],[3,40],[5,55],[8,70],[12,82],[16,91],[25,100]];
+var COD_KD   = [[0.40,0],[0.75,25],[1.00,45],[1.30,62],[1.60,75],[2.00,86],[2.50,94],[3.50,100]];
+var R6_KD    = [[0.40,0],[0.70,22],[0.90,40],[1.10,57],[1.35,72],[1.60,84],[2.00,94],[2.50,100]];
+
+function parseTime(str){
+  if(typeof str === "number") return str;
+  if(!str) return 0;
+  var p = String(str).trim().split(":");
+  if(p.length === 2) return n(p[0])*60 + n(p[1]);
+  return n(str);
+}
+function fmtTime(sec){
+  sec = Math.round(sec);
+  var m = Math.floor(sec/60), s = sec%60;
+  return m + ":" + (s<10?"0":"") + s;
+}
+
+function scorePhysical(p){
+  var female = p.sex === "f";
+  var bw = Math.max(n(p.bodyweightKg), 1);
+  var coef = strengthAgeCoef(n(p.age));
+  var rows = [];
+
+  var benchPts = 0, squatPts = 0;
+  if(p.trainsNow){
+    var br = (n(p.benchKg)/bw) * coef;
+    var sr = (n(p.squatKg)/bw) * coef;
+    benchPts = lerp(br, female ? BENCH_F : BENCH_M);
+    squatPts = lerp(sr, female ? SQUAT_F : SQUAT_M);
+    rows.push({lab:"Bench press", raw:n(p.benchKg)+"kg = "+br.toFixed(2)+"x bodyweight, age adjusted", pts:benchPts});
+    rows.push({lab:"Squat",       raw:n(p.squatKg)+"kg = "+sr.toFixed(2)+"x bodyweight, age adjusted", pts:squatPts});
+  } else {
+    rows.push({lab:"Bench press", raw:"Not currently training", pts:0, dq:true});
+    rows.push({lab:"Squat",       raw:"Not currently training", pts:0, dq:true});
+  }
+
+  var runPts = 0;
+  if(p.ranRecently && n(p.run5kSeconds) > 0){
+    var graded = n(p.run5kSeconds) * runAgeFactor(n(p.age));
+    runPts = lerp(graded, female ? RUN_F : RUN_M);
+    rows.push({lab:"5km", raw:fmtTime(n(p.run5kSeconds))+" actual, "+fmtTime(graded)+" age graded", pts:runPts});
+  } else {
+    rows.push({lab:"5km", raw:"No run inside three months", pts:0, dq:true});
+  }
+
+  var total = benchPts*0.30 + squatPts*0.35 + runPts*0.35;
+  return {score:clamp(total,0,100), rows:rows, strength:(benchPts+squatPts)/2, cardio:runPts};
+}
+
+function imputedTotal(p, S){
+  var total = 0, parts = [];
+  function add(key){
+    if(!key) return;
+    var item = S.imputed[key];
+    if(!item) return;
+    total += n(item.v);
+    parts.push({t:item.t, v:n(item.v)});
+  }
+  var h = HOUSING.filter(function(x){return x.k===p.housing;})[0];
+  var f = FOOD.filter(function(x){return x.k===p.food;})[0];
+  var t = TRANSPORT.filter(function(x){return x.k===p.transport;})[0];
+  var ph = PHONE.filter(function(x){return x.k===p.phone;})[0];
+  var lp = LAPTOP.filter(function(x){return x.k===p.laptop;})[0];
+  if(h) add(h.imp);
+  if(f) add(f.imp);
+  if(t) add(t.imp);
+  if(ph) add(ph.imp);
+  if(lp) add(lp.imp);
+  /* Bills not in your own name get charged back once. */
+  var owned = (p.billsOwn||[]).length;
+  if(owned < BILLS.length && p.transport !== "own_fam"){
+    var miss = BILLS.length - owned;
+    if(miss >= 3) add("bills_family");
+  }
+  return {total:total, parts:parts};
+}
+
+var EXPECTED_CASHFLOW = [[18,1200],[22,2800],[25,5000],[30,9000],[35,14000],[40,20000],[50,28000],[60,32000]];
+
+function scoreFinancial(p, S){
+  var cur = S.currency;
+  var imp = imputedTotal(p, S);
+  var rawCash = n(p.cashflowMonthly);
+  var costs = n(p.livingCostsMonthly);
+  var adjCash = rawCash - imp.total;
+  var trueCost = costs + imp.total;
+  var rows = [];
+
+  var expected = lerp(n(p.age), EXPECTED_CASHFLOW);
+  var ratio = adjCash / Math.max(expected, 1);
+  var cashPts = adjCash <= 0 ? 0 :
+    lerp(ratio, [[0,0],[0.25,25],[0.5,42],[1,65],[1.5,78],[2,86],[3,95],[5,100]]);
+  rows.push({
+    lab:"Adjusted cash flow",
+    raw: money(adjCash,cur)+" left at month end against "+money(expected,cur)+" expected at "+Math.round(n(p.age)) +
+         (imp.total>0 ? ", after "+money(imp.total,cur)+" charged back" : ""),
+    pts:cashPts, dq:adjCash<=0
+  });
+
+  /* Replaces savings rate now that there is no salary to divide by. */
+  var banked = trueCost > 0 ? adjCash/trueCost : 0;
+  var bankedPts = banked <= 0 ? 0 :
+    lerp(banked, [[0,0],[0.15,30],[0.3,50],[0.5,68],[0.75,82],[1,92],[1.5,100]]);
+  rows.push({lab:"Banked against burn", raw:banked.toFixed(2)+" months banked for every month you live, at "+money(trueCost,cur)+"/mo true cost", pts:bankedPts});
+
+  var runway = trueCost > 0 ? n(p.liquidSavings)/trueCost : 0;
+  var runwayPts = lerp(runway, [[0,0],[1,20],[3,45],[6,68],[12,85],[24,100]]);
+  rows.push({lab:"Runway", raw:runway.toFixed(1)+" months of true cost sitting in liquid savings", pts:runwayPts});
+
+  var annual = Math.max(trueCost*12, 1);
+  var yearsOwned = n(p.netWorth)/annual;
+  var expectedYears = Math.max(0.15, (n(p.age)-21)*0.25);
+  var nwPts = n(p.netWorth) <= 0 ? 0 :
+    lerp(yearsOwned/expectedYears, [[0,0],[0.25,18],[0.5,35],[0.75,50],[1,65],[1.5,78],[2,87],[3,95],[5,100]]);
+  rows.push({
+    lab:"Net worth against age",
+    raw: yearsOwned.toFixed(2)+" years of your life owned, "+expectedYears.toFixed(2)+" expected by "+Math.round(n(p.age)),
+    pts:nwPts, dq:n(p.netWorth)<=0
+  });
+
+  var debtMonths = trueCost > 0 ? n(p.badDebt)/trueCost : (n(p.badDebt)>0 ? 6 : 0);
+  var penalty = lerp(debtMonths, [[0,0],[0.5,4],[1,9],[2,16],[4,22],[6,25]]);
+  if(penalty > 0.05){
+    rows.push({lab:"Bad debt penalty", raw:money(n(p.badDebt),cur)+" = "+debtMonths.toFixed(1)+" months of your cost of living", pts:-penalty, dq:true});
+  }
+
+  var base = cashPts*0.32 + bankedPts*0.23 + runwayPts*0.20 + nwPts*0.25;
+  return {
+    score: clamp(base - penalty, 0, 100),
+    rows: rows,
+    imputed: imp,
+    adjCash: adjCash,
+    rawCash: rawCash
+  };
+}
+
+function scoreIndependence(p, S){
+  var cur = S.currency;
+  function pick(list, key){ return list.filter(function(x){return x.k===key;})[0] || list[list.length-1]; }
+  var h = pick(HOUSING, p.housing), f = pick(FOOD, p.food),
+      t = pick(TRANSPORT, p.transport), e = pick(EMERGENCY, p.emergency),
+      ph = pick(PHONE, p.phone), lp = pick(LAPTOP, p.laptop);
+  var owned = (p.billsOwn||[]).length;
+  var billPts = (owned / BILLS.length) * 100;
+
+  /* A contract is worse the bigger it is. Cash owners are untouched by this. */
+  function contractDrag(base, key, amount){
+    if(key !== "contract") return base;
+    return clamp(base - lerp(n(amount), [[0,0],[400,4],[800,10],[1500,20],[2500,30]]), 0, 100);
+  }
+  var phonePts  = contractDrag(ph.s, p.phone,  p.phoneMonthly);
+  var laptopPts = contractDrag(lp.s, p.laptop, p.laptopMonthly);
+  var devicePts = phonePts*0.5 + laptopPts*0.5;
+
+  function devRaw(item, key, amount){
+    return item.t + (key === "contract" ? " at " + money(n(amount), cur) + "/mo" : "");
+  }
+
+  var rows = [
+    {lab:"Housing",   raw:h.t, pts:h.s, dq:h.s<=30},
+    {lab:"Food",      raw:f.t, pts:f.s, dq:f.s<=40},
+    {lab:"Transport", raw:t.t, pts:t.s},
+    {lab:"Own accounts", raw:owned+" of "+BILLS.length+" in your own name", pts:billPts},
+    {lab:"Phone",  raw:devRaw(ph, p.phone,  p.phoneMonthly),  pts:phonePts,  dq:ph.s===0},
+    {lab:"Laptop", raw:devRaw(lp, p.laptop, p.laptopMonthly), pts:laptopPts, dq:lp.s<=10},
+    {lab:"Emergency self reliance", raw:e.t, pts:e.s, dq:e.s<=35}
+  ];
+  var total = h.s*0.25 + f.s*0.15 + t.s*0.12 + billPts*0.15 + devicePts*0.20 + e.s*0.13;
+  return {score:clamp(total,0,100), rows:rows, housing:h, food:f, phone:ph, laptop:lp};
+}
+
+function scoreEducation(p){
+  function pick(list, key){ return list.filter(function(x){return x.k===key;})[0] || list[list.length-1]; }
+  var q = pick(NQF, p.nqf), fl = pick(FIELDS, p.field);
+  var usesField = q.lvl >= 5;
+  var afterField = usesField ? q.s * fl.m : q.s;
+  var final = afterField;
+  var rows = [{lab:"Qualification", raw:q.t, pts:q.s}];
+
+  if(usesField){
+    rows.push({lab:"Field weighting", raw:fl.t+", rated "+fl.m.toFixed(2)+"x", pts:afterField, dq:fl.m < 0.75});
+  } else {
+    rows.push({lab:"Field weighting", raw:"Not applied below NQF 5", pts:q.s});
+  }
+  if(usesField && !p.eduComplete){
+    final = afterField * 0.7;
+    rows.push({lab:"Completion", raw:"Still in progress, scored at 70 percent", pts:final, dq:true});
+  } else if(usesField){
+    rows.push({lab:"Completion", raw:"Completed", pts:final});
+  }
+  return {score:clamp(final,0,100), rows:rows, qual:q, field:fl};
+}
+
+function scoreGaming(p){
+  var rows = [], played = [];
+  function game(on, val, bench, lab, unit){
+    if(on){
+      var pts = lerp(n(val), bench);
+      played.push(pts);
+      rows.push({lab:lab, raw:n(val)+unit, pts:pts});
+    } else {
+      rows.push({lab:lab, raw:"Does not play", pts:0, dq:true});
+    }
+  }
+  game(p.playsFortnite, p.fortniteWinRate, FORTNITE, "Fortnite solos", " percent solo win rate");
+  game(p.playsCod,      p.codKd,           COD_KD,   "Call of Duty",   " K/D");
+  game(p.playsR6,       p.r6Kd,            R6_KD,    "Rainbow Six Siege", " K/D");
+
+  var score = played.length ? played.reduce(function(a,b){return a+b;},0)/played.length : 0;
+  return {score:clamp(score,0,100), rows:rows, plays:played.length};
+}
+
+function scoreSpiritual(p, S){
+  var cur = S.currency;
+  function pick(list, key){ return list.filter(function(x){return x.k===key;})[0] || list[list.length-1]; }
+  var pr = pick(PRACTICE, p.practice);
+
+  var givePts = lerp(n(p.givingPct), [[0,0],[2,40],[5,70],[10,95],[15,100]]);
+  var volPts  = lerp(n(p.volunteerHours), [[0,0],[2,40],[5,70],[10,90],[20,100]]);
+  var servicePts = (givePts + volPts)/2;
+
+  var alcPts  = lerp(n(p.drinksPerWeek), [[0,100],[2,90],[5,72],[10,50],[15,30],[25,0]]);
+  var gamPts  = lerp(n(p.gamblingMonthly), [[0,100],[200,80],[500,60],[1500,30],[3000,0]]);
+  var vicePts = clamp((alcPts + gamPts)/2 - (p.smokes ? 20 : 0), 0, 100);
+
+  var inner = (n(p.purpose) + n(p.stress) + n(p.relationships)) / 3 * 10;
+
+  var rel = pick(RELATIONSHIP, p.relationship);
+
+  var rows = [
+    {lab:"Practice", raw:pr.t, pts:pr.s, dq:pr.s<=15},
+    {lab:"Service and giving", raw:n(p.givingPct)+"% given, "+n(p.volunteerHours)+" hrs/mo volunteered", pts:servicePts},
+    {lab:"Vice load", raw:n(p.drinksPerWeek)+" drinks/wk, "+money(n(p.gamblingMonthly),cur)+"/mo gambled"+(p.smokes?", smoking":""), pts:vicePts, dq:vicePts<40},
+    {lab:"Relationship", raw:rel.t, pts:rel.s, dq:rel.s<=35},
+    {lab:"Inner state", raw:"Purpose "+n(p.purpose)+", stress "+n(p.stress)+", relationships "+n(p.relationships)+" out of 10", pts:inner}
+  ];
+  var total = pr.s*0.25 + servicePts*0.22 + vicePts*0.25 + rel.s*0.12 + inner*0.16;
+  return {score:clamp(total,0,100), rows:rows, vice:vicePts, rel:rel};
+}
+
+var RECEIPT_MULT = {verified:1, partial:0.95, claimed:0.88};
+
+function scoreAll(p, S){
+  var w = S.weights;
+  var pills = {
+    physical:     scorePhysical(p),
+    financial:    scoreFinancial(p,S),
+    independence: scoreIndependence(p,S),
+    education:    scoreEducation(p),
+    spiritual:    scoreSpiritual(p,S),
+    gaming:       scoreGaming(p)
+  };
+  var sum = 0;
+  PILLAR_META.forEach(function(m){ sum += n(w[m.k]); });
+  sum = Math.max(sum, 1);
+
+  var weighted = 0;
+  PILLAR_META.forEach(function(m){ weighted += pills[m.k].score * (n(w[m.k])/sum); });
+
+  var mult = RECEIPT_MULT[p.receipts] != null ? RECEIPT_MULT[p.receipts] : 0.88;
+  var total = clamp(weighted * mult, 0, 100);
+
+  var phy = pills.physical, fin = pills.financial, ind = pills.independence,
+      spi = pills.spiritual, gam = pills.gaming, edu = pills.education;
+
+  var badges = [];
+  if(ind.housing.k === "par_free" && ind.food.k === "parents") badges.push({t:"SUBSIDISED", c:"warn"});
+  if(!p.trainsNow) badges.push({t:"NOT IN TRAINING", c:"warn"});
+  if(!p.ranRecently) badges.push({t:"NO RECENT 5K", c:"warn"});
+  if(phy.strength >= 70 && phy.cardio <= 35 && p.ranRecently) badges.push({t:"BENCH ONLY", c:"note"});
+  if(fin.adjCash < 0) badges.push({t:"NEGATIVE CASH FLOW", c:"warn"});
+  if(ind.phone.k === "family" || ind.laptop.k === "family") badges.push({t:"KIT NOT PAID FOR", c:"warn"});
+  if(ind.score >= 90) badges.push({t:"FULLY INDEPENDENT", c:"good"});
+  if(edu.score >= 80) badges.push({t:"HARD DEGREE", c:"good"});
+  if(spi.rel.k === "single") badges.push({t:"SINGLE", c:"note"});
+  if(spi.vice >= 90) badges.push({t:"DISCIPLINED", c:"good"});
+  if(gam.plays === 0) badges.push({t:"DOES NOT GAME", c:"note"});
+  else if(gam.score >= 85) badges.push({t:"COOKED", c:"good"});
+  if(p.receipts === "claimed") badges.push({t:"UNVERIFIED", c:"note"});
+  else if(p.receipts === "verified") badges.push({t:"VERIFIED", c:"good"});
+
+  return {total: total, weighted: weighted, mult: mult, badges: badges, pillars: pills};
+}
+
+function money(v, cur){
+  var neg = v < 0;
+  var s = Math.round(Math.abs(v)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return (neg ? "-" : "") + (cur||"R") + s;
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+var state = {v:1, people:[], settings:null};
+var editingId = null, sortBy = "total";
+var online = false, syncing = 0, lastError = "";
+
+function defaultPerson(){
+  return {
+    id: "p" + Math.random().toString(36).slice(2,9),
+    name:"", age:27, sex:"m", bodyweightKg:80, receipts:"claimed",
+    trainsNow:true, sessionsPerWeek:4, benchKg:80, squatKg:110,
+    ranRecently:true, run5kSeconds:1560,
+    cashflowMonthly:6000, livingCostsMonthly:18000, liquidSavings:40000, netWorth:90000, badDebt:0,
+    housing:"rent_solo", food:"own_cook", transport:"own_paid", emergency:"yes_hurt",
+    billsOwn:["phone","net"],
+    phone:"cash", phoneMonthly:0, laptop:"cash", laptopMonthly:0,
+    nqf:"nqf7", field:"biz", eduComplete:true,
+    practice:"weekly", givingPct:0, volunteerHours:0,
+    drinksPerWeek:4, smokes:false, gamblingMonthly:0, relationship:"single",
+    purpose:6, stress:6, relationships:6,
+    playsFortnite:false, fortniteWinRate:3,
+    playsCod:false, codKd:1.1,
+    playsR6:false, r6Kd:1.0
+  };
+}
+
+function loadState(){
+  var local = null;
+  try{ var ls = localStorage.getItem("life-ledger"); if(ls) local = JSON.parse(ls); }catch(e){}
+  state.people = (local && local.people) || [];
+  state.settings = mergeSettings(local && local.settings);
+}
+function mergeSettings(s){
+  var out = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  if(!s) return out;
+  if(s.currency) out.currency = s.currency;
+  if(s.weights) for(var k in s.weights) if(out.weights[k] != null) out.weights[k] = n(s.weights[k]);
+  if(s.imputed) for(var j in s.imputed) if(out.imputed[j]) out.imputed[j].v = n(s.imputed[j].v);
+  return out;
+}
+function saveLocal(){
+  try{ localStorage.setItem("life-ledger", JSON.stringify({v:1, people:state.people, settings:state.settings})); }catch(e){}
+}
+
+function setSync(delta){
+  syncing = Math.max(0, syncing + delta);
+  var el = document.getElementById("sync-pill");
+  if(!el) return;
+  if(syncing > 0){ el.textContent = "Saving"; el.className = "syncpill busy"; }
+  else if(online){ el.textContent = "Live board"; el.className = "syncpill on"; }
+  else { el.textContent = "Offline, this device only"; el.className = "syncpill off"; }
+}
+
+/* Pull the shared board and redraw, unless someone is mid entry.
+   Owns its own busy counter, so callers must not bump it. */
+function refresh(silent){
+  /* A background poll is a read, so it never flashes the Saving state. */
+  if(!silent) setSync(1);
+  return sbPull().then(function(remote){
+    online = true; lastError = "";
+    state.people = remote.people;
+    if(remote.settings) state.settings = mergeSettings(remote.settings);
+    saveLocal();
+    setSync(silent ? 0 : -1);
+    if(!document.getElementById("view-entry").classList.contains("hidden")) return;
+    render();
+  }).catch(function(err){
+    online = false; lastError = String(err && err.message || err);
+    setSync(silent ? 0 : -1);
+    if(!silent) toast("Could not reach the shared board. Showing the last copy saved on this device.");
+  });
+}
+
+/* op returns a promise for the write. Local state is already updated. */
+function persist(msg, op){
+  saveLocal();
+  render();
+  setSync(1);
+  toast(msg);
+  return op().then(function(){
+    online = true;
+    setSync(-1);
+    return refresh(true);
+  }).catch(function(err){
+    online = false; lastError = String(err && err.message || err);
+    setSync(-1);
+    toast("Saved on this device, but the shared board did not accept it. It will go up next time you save with signal.");
+  });
+}
+
+/* ============================================================
+   RENDER: BOARD
+   ============================================================ */
+function render(){
+  var body = document.getElementById("board-body");
+  var S = state.settings;
+
+  if(!state.people.length){
+    body.innerHTML =
+      '<div class="empty"><h2>Nobody has entered yet</h2>' +
+      '<p>The board is empty. Add the first set of numbers and the standings build themselves.</p>' +
+      '<button class="btn btn-primary" id="btn-first">Enter the first numbers</button></div>';
+    document.getElementById("btn-first").onclick = function(){ openEntry(null); };
+    return;
+  }
+
+  var scored = state.people.map(function(p){ return {p:p, r:scoreAll(p, S)}; });
+  scored.sort(function(a,b){
+    if(sortBy === "total") return b.r.total - a.r.total;
+    return b.r.pillars[sortBy].score - a.r.pillars[sortBy].score;
+  });
+
+  var html = "";
+
+  if(sortBy === "total" && scored.length >= 2){
+    html += '<div class="sect" style="margin-top:4px"><div class="sect-head"><h2>The weigh in</h2><div class="rule"></div></div><div class="weighin">';
+    scored.slice(0,3).forEach(function(row, i){
+      var places = ["First","Second","Third"];
+      html += '<div class="wcard ' + (i===0?"first":"") + '" style="animation-delay:' + (i*70) + 'ms">' +
+        '<span class="place">' + places[i] + '</span>' +
+        '<div class="who">' + esc(row.p.name || "Unnamed") + '</div>' +
+        '<div class="tot">' + row.r.total.toFixed(1) + '<span> / 100</span></div>' +
+        '<div class="wbadges">' + row.r.badges.slice(0,3).map(badgeHtml).join("") + '</div>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  html += '<div class="sect"><div class="sect-head"><h2>Full standings</h2><div class="rule"></div>' +
+    '<select id="sort-by" style="width:auto;font-size:12px;padding:6px 9px">' +
+      '<option value="total">Overall</option>' +
+      PILLAR_META.map(function(m){ return '<option value="'+m.k+'">'+m.full+' only</option>'; }).join("") +
+    '</select></div><div class="ledger">';
+
+  scored.forEach(function(row, i){
+    var p = row.p, r = row.r;
+    var shown = sortBy === "total" ? r.total : r.pillars[sortBy].score;
+    html += '<div class="lrow ' + (i===0?"top":"") + '" data-id="' + p.id + '" style="animation-delay:' + Math.min(i*45,360) + 'ms">' +
+      '<button class="lrow-btn" aria-expanded="false">' +
+        '<span class="lrank num">' + (i+1) + '</span>' +
+        '<span><span class="lname">' + esc(p.name || "Unnamed") + '</span>' +
+          '<span class="lmeta"><span class="age">' + Math.round(n(p.age)) + 'y &middot; ' + n(p.bodyweightKg) + 'kg</span>' +
+          r.badges.slice(0,3).map(badgeHtml).join("") + '</span></span>' +
+        '<span class="lscore">' + shown.toFixed(1) + '</span>' +
+      '</button>' +
+      '<div class="pillars">' + PILLAR_META.map(function(m){
+        var v = r.pillars[m.k].score;
+        var cls = v >= 70 ? "brass" : (v < 35 ? "low" : "");
+        return '<div class="pil"><div class="pil-top"><span class="pil-lab">' + m.lab + '</span>' +
+          '<span class="pil-val">' + v.toFixed(0) + '</span></div>' +
+          '<div class="track"><div class="fill ' + cls + '" style="width:' + v.toFixed(1) + '%"></div></div></div>';
+      }).join("") + '</div>' +
+      '<div class="detail">' + detailHtml(p, r, S) + '</div>' +
+    '</div>';
+  });
+
+  html += '</div></div>' +
+    '<div class="sect"><div class="btn-row">' +
+      '<button class="btn btn-primary" id="btn-add">Add someone</button>' +
+      '<button class="btn" id="btn-tab-rules">Adjust the rules</button>' +
+    '</div></div>';
+
+  body.innerHTML = html;
+
+  document.getElementById("sort-by").value = sortBy;
+  document.getElementById("sort-by").onchange = function(){ sortBy = this.value; render(); };
+  document.getElementById("btn-add").onclick = function(){ openEntry(null); };
+  document.getElementById("btn-tab-rules").onclick = function(){ showView("rules"); };
+
+  Array.prototype.forEach.call(body.querySelectorAll(".lrow-btn"), function(btn){
+    btn.onclick = function(){
+      var row = btn.closest(".lrow");
+      var open = row.classList.toggle("open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll("[data-edit]"), function(b){
+    b.onclick = function(e){ e.stopPropagation(); openEntry(b.getAttribute("data-edit")); };
+  });
+}
+
+function badgeHtml(b){ return '<span class="badge badge-' + b.c + '">' + b.t + '</span>'; }
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+function detailHtml(p, r, S){
+  var w = S.weights;
+  var sum = 0;
+  PILLAR_META.forEach(function(m){ sum += n(w[m.k]); });
+  sum = Math.max(sum, 1);
+  var html = '<div class="dgrid">';
+  PILLAR_META.forEach(function(m){
+    var pil = r.pillars[m.k];
+    var share = (n(w[m.k])/sum*100).toFixed(0);
+    html += '<div class="dcard"><h3>' + m.full + ' <span style="color:var(--faint);font-size:10px">' + share + '% weight</span> <b>' + pil.score.toFixed(1) + '</b></h3>';
+    pil.rows.forEach(function(row){
+      html += '<div class="drow' + (row.dq ? " dq" : "") + '">' +
+        '<span class="drow-lab">' + esc(row.lab) + '</span>' +
+        '<span class="drow-pts">' + (row.pts < 0 ? "" : "") + row.pts.toFixed(0) + '</span>' +
+        '<span class="drow-raw">' + esc(row.raw) + '</span></div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+
+  var fin = r.pillars.financial;
+  if(fin.imputed.total > 0){
+    html += '<div class="dnote"><b>Charged back before scoring:</b> ' +
+      fin.imputed.parts.map(function(x){ return esc(x.t) + " " + money(x.v, S.currency); }).join(", ") +
+      '. You said ' + money(fin.rawCash, S.currency) + ' was left at month end, so the honest figure is ' +
+      money(fin.adjCash, S.currency) + '.</div>';
+  }
+  if(r.mult < 1){
+    html += '<div class="dnote"><b>Receipts haircut:</b> scored ' + r.weighted.toFixed(1) +
+      ' before evidence, ' + r.total.toFixed(1) + ' after a ' + Math.round((1-r.mult)*100) + '% deduction for unproven numbers.</div>';
+  }
+  html += '<div class="dact"><button class="btn btn-sm" data-edit="' + p.id + '">Edit these numbers</button></div>';
+  return html;
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+function fillSelect(id, list){
+  var el = document.getElementById(id);
+  el.innerHTML = list.map(function(o){ return '<option value="' + o.k + '">' + esc(o.t) + '</option>'; }).join("");
+}
+function buildBills(){
+  document.getElementById("f-bills").innerHTML = BILLS.map(function(b){
+    return '<label class="chk"><input type="checkbox" value="' + b.k + '"><span>' + esc(b.t) + '</span></label>';
+  }).join("");
+}
+
+function readForm(){
+  var p = editingId ? JSON.parse(JSON.stringify(state.people.filter(function(x){return x.id===editingId;})[0])) : defaultPerson();
+  function v(id){ return document.getElementById(id).value; }
+  function c(id){ return document.getElementById(id).checked; }
+  p.name = v("f-name").trim();
+  p.age = n(v("f-age")); p.sex = v("f-sex"); p.bodyweightKg = n(v("f-bw")); p.receipts = v("f-receipts");
+  p.trainsNow = c("f-trains"); p.sessionsPerWeek = n(v("f-sessions"));
+  p.benchKg = n(v("f-bench")); p.squatKg = n(v("f-squat"));
+  p.ranRecently = c("f-ran"); p.run5kSeconds = parseTime(v("f-5k"));
+  p.cashflowMonthly = n(v("f-cashflow")); p.livingCostsMonthly = n(v("f-costs"));
+  p.liquidSavings = n(v("f-savings")); p.netWorth = n(v("f-networth")); p.badDebt = n(v("f-baddebt"));
+  p.housing = v("f-housing"); p.food = v("f-food"); p.transport = v("f-transport"); p.emergency = v("f-emergency");
+  p.billsOwn = Array.prototype.filter.call(document.querySelectorAll("#f-bills input"), function(i){return i.checked;})
+    .map(function(i){ return i.value; });
+  p.phone = v("f-phone"); p.phoneMonthly = n(v("f-phone-amt"));
+  p.laptop = v("f-laptop"); p.laptopMonthly = n(v("f-laptop-amt"));
+  p.nqf = v("f-nqf"); p.field = v("f-field"); p.eduComplete = c("f-edu-complete");
+  p.practice = v("f-practice"); p.relationship = v("f-relationship");
+  p.givingPct = n(v("f-giving")); p.volunteerHours = n(v("f-volunteer"));
+  p.drinksPerWeek = n(v("f-drinks")); p.smokes = c("f-smokes"); p.gamblingMonthly = n(v("f-gambling"));
+  p.purpose = n(v("f-purpose")); p.stress = n(v("f-stress")); p.relationships = n(v("f-rel"));
+  p.playsFortnite = c("f-plays-fortnite"); p.fortniteWinRate = n(v("f-fortnite"));
+  p.playsCod = c("f-plays-cod"); p.codKd = n(v("f-cod"));
+  p.playsR6 = c("f-plays-r6"); p.r6Kd = n(v("f-r6"));
+  return p;
+}
+
+function writeForm(p){
+  function s(id, val){ document.getElementById(id).value = val; }
+  function ck(id, val){ document.getElementById(id).checked = !!val; }
+  s("f-name", p.name); s("f-age", p.age); s("f-sex", p.sex); s("f-bw", p.bodyweightKg); s("f-receipts", p.receipts);
+  ck("f-trains", p.trainsNow); s("f-sessions", p.sessionsPerWeek); s("f-bench", p.benchKg); s("f-squat", p.squatKg);
+  ck("f-ran", p.ranRecently); s("f-5k", fmtTime(p.run5kSeconds));
+  s("f-cashflow", p.cashflowMonthly); s("f-costs", p.livingCostsMonthly);
+  s("f-savings", p.liquidSavings); s("f-networth", p.netWorth); s("f-baddebt", p.badDebt);
+  s("f-housing", p.housing); s("f-food", p.food); s("f-transport", p.transport); s("f-emergency", p.emergency);
+  Array.prototype.forEach.call(document.querySelectorAll("#f-bills input"), function(i){
+    i.checked = (p.billsOwn || []).indexOf(i.value) !== -1;
+  });
+  s("f-phone", p.phone); s("f-phone-amt", p.phoneMonthly);
+  s("f-laptop", p.laptop); s("f-laptop-amt", p.laptopMonthly);
+  s("f-nqf", p.nqf); s("f-field", p.field); ck("f-edu-complete", p.eduComplete);
+  s("f-practice", p.practice); s("f-relationship", p.relationship);
+  s("f-giving", p.givingPct); s("f-volunteer", p.volunteerHours);
+  s("f-drinks", p.drinksPerWeek); ck("f-smokes", p.smokes); s("f-gambling", p.gamblingMonthly);
+  s("f-purpose", p.purpose); s("f-stress", p.stress); s("f-rel", p.relationships);
+  ck("f-plays-fortnite", p.playsFortnite); s("f-fortnite", p.fortniteWinRate);
+  ck("f-plays-cod", p.playsCod); s("f-cod", p.codKd);
+  ck("f-plays-r6", p.playsR6); s("f-r6", p.r6Kd);
+  ["purpose","stress","rel"].forEach(function(k){ document.getElementById("o-"+k).value = p[k==="rel"?"relationships":k]; });
+  syncGates(); liveScore();
+}
+
+function syncGates(){
+  var trains = document.getElementById("f-trains").checked;
+  var ran = document.getElementById("f-ran").checked;
+  document.getElementById("grp-lifts").setAttribute("data-off", trains ? "0" : "1");
+  document.getElementById("dq-lift").setAttribute("data-on", trains ? "0" : "1");
+  document.getElementById("grp-run").setAttribute("data-off", ran ? "0" : "1");
+  document.getElementById("dq-run").setAttribute("data-on", ran ? "0" : "1");
+
+  [["f-plays-fortnite","grp-fortnite"],["f-plays-cod","grp-cod"],["f-plays-r6","grp-r6"]].forEach(function(g){
+    document.getElementById(g[1]).setAttribute("data-off", document.getElementById(g[0]).checked ? "0" : "1");
+  });
+
+  /* The field weighting is only live from NQF 5 up. */
+  var lvl = (NQF.filter(function(x){return x.k===document.getElementById("f-nqf").value;})[0] || {lvl:0}).lvl;
+  document.getElementById("f-field").parentNode.setAttribute("data-off", lvl >= 5 ? "0" : "1");
+  document.getElementById("f-field").parentNode.classList.add("gated");
+}
+
+function liveScore(){
+  var r = scoreAll(readForm(), state.settings);
+  document.getElementById("live-score").textContent = r.total.toFixed(1);
+}
+
+function openEntry(id){
+  editingId = id;
+  var p = id ? state.people.filter(function(x){return x.id===id;})[0] : defaultPerson();
+  document.getElementById("form-title").textContent = id ? "Editing " + (p.name || "entry") : "New Entry";
+  document.getElementById("btn-delete").classList.toggle("hidden", !id);
+  writeForm(p);
+  showView("entry");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* ============================================================
+   RULEBOOK
+   ============================================================ */
+function renderRules(){
+  var S = state.settings;
+  document.getElementById("weight-rows").innerHTML = PILLAR_META.map(function(m){
+    return '<div class="wrow"><span>' + m.full + '</span>' +
+      '<input type="range" min="0" max="50" step="1" value="' + n(S.weights[m.k]) + '" data-weight="' + m.k + '">' +
+      '<output class="num">' + Math.round(n(S.weights[m.k])) + '</output></div>';
+  }).join("");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-weight]"), function(el){
+    el.oninput = function(){
+      S.weights[el.getAttribute("data-weight")] = n(el.value);
+      el.parentNode.querySelector("output").textContent = Math.round(n(el.value));
+      render();
+    };
+    el.onchange = function(){ saveLocal(); pushSettingsSoon(); };
+  });
+
+  document.getElementById("imp-rows").innerHTML = Object.keys(S.imputed).map(function(k){
+    return '<tr><td>' + esc(S.imputed[k].t) + '</td>' +
+      '<td><input type="number" min="0" step="100" value="' + n(S.imputed[k].v) + '" data-imp="' + k + '"></td></tr>';
+  }).join("");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-imp]"), function(el){
+    el.oninput = function(){ S.imputed[el.getAttribute("data-imp")].v = n(el.value); render(); };
+    el.onchange = function(){ saveLocal(); pushSettingsSoon(); };
+  });
+  updateSyncNote();
+}
+
+var settingsTimer = null;
+function pushSettingsSoon(){
+  clearTimeout(settingsTimer);
+  settingsTimer = setTimeout(function(){
+    setSync(1);
+    sbPutSettings(state.settings)
+      .then(function(){ online = true; setSync(-1); })
+      .catch(function(){ online = false; setSync(-1); });
+  }, 900);
+}
+
+function updateSyncNote(){
+  var el = document.getElementById("sync-note");
+  if(!el) return;
+  if(online){
+    el.innerHTML = '<b>Shared board, live.</b> Everyone on this link reads and writes the same standings. It refreshes when you open it, after every save, and every twenty seconds while the page is open. Anyone with the link can edit or remove any entry, so keep it in the chat.';
+  } else {
+    el.innerHTML = '<b>Cannot reach the shared board.</b> You are looking at the last copy saved in this browser. Anything you save now stays on this device until the connection is back.' +
+      (lastError ? ' <span class="num" style="font-size:11px">(' + esc(lastError.slice(0,120)) + ')</span>' : '');
+  }
+}
+
+function boardAsText(){
+  var S = state.settings;
+  var scored = state.people.map(function(p){ return {p:p, r:scoreAll(p,S)}; })
+    .sort(function(a,b){ return b.r.total - a.r.total; });
+  var lines = ["THE LIFE LEDGER", ""];
+  scored.forEach(function(row, i){
+    var r = row.r;
+    lines.push((i+1) + ". " + (row.p.name || "Unnamed") + "  " + r.total.toFixed(1));
+    lines.push("   " + PILLAR_META.map(function(m){
+      return m.lab + " " + r.pillars[m.k].score.toFixed(0);
+    }).join("  "));
+    var b = r.badges.filter(function(x){return x.c==="warn";}).map(function(x){return x.t;});
+    if(b.length) lines.push("   " + b.join(", "));
+  });
+  return lines.join("\n");
+}
+
+function copyText(txt, msg){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ toast(msg); }, function(){ fallbackCopy(txt, msg); });
+  } else fallbackCopy(txt, msg);
+}
+function fallbackCopy(txt, msg){
+  var ta = document.createElement("textarea");
+  ta.value = txt; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); toast(msg); }catch(e){ toast("Could not copy automatically."); }
+  document.body.removeChild(ta);
+}
+
+/* ============================================================
+   VIEWS, TOAST, WIRING
+   ============================================================ */
+function showView(v){
+  ["board","entry","rules"].forEach(function(k){
+    document.getElementById("view-"+k).classList.toggle("hidden", k !== v);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function(t){
+    t.setAttribute("aria-selected", t.getAttribute("data-view") === v ? "true" : "false");
+  });
+  if(v === "rules") renderRules();
+}
+
+var toastTimer = null;
+function toast(msg){
+  var el = document.getElementById("toast");
+  el.textContent = msg;
+  el.setAttribute("data-show","1");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.setAttribute("data-show","0"); }, 4200);
+}
+
+function wire(){
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function(t){
+    t.onclick = function(){ showView(t.getAttribute("data-view")); };
+  });
+
+  fillSelect("f-housing", HOUSING);
+  fillSelect("f-food", FOOD);
+  fillSelect("f-transport", TRANSPORT);
+  fillSelect("f-emergency", EMERGENCY);
+  fillSelect("f-practice", PRACTICE);
+  fillSelect("f-relationship", RELATIONSHIP);
+  fillSelect("f-phone", PHONE);
+  fillSelect("f-laptop", LAPTOP);
+  fillSelect("f-nqf", NQF);
+  fillSelect("f-field", FIELDS);
+  buildBills();
+
+  ["f-trains","f-ran","f-plays-fortnite","f-plays-cod","f-plays-r6","f-nqf"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", function(){ syncGates(); liveScore(); });
+  });
+  [["f-purpose","o-purpose"],["f-stress","o-stress"],["f-rel","o-rel"]].forEach(function(pair){
+    document.getElementById(pair[0]).oninput = function(){
+      document.getElementById(pair[1]).value = this.value; liveScore();
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("#view-entry input, #view-entry select"), function(el){
+    el.addEventListener("input", liveScore);
+    el.addEventListener("change", liveScore);
+  });
+
+  document.getElementById("btn-save").onclick = function(){
+    var p = readForm();
+    if(!p.name){ toast("Give this entry a name first."); document.getElementById("f-name").focus(); return; }
+    if(editingId){
+      state.people = state.people.map(function(x){ return x.id === editingId ? p : x; });
+    } else {
+      state.people.push(p);
+    }
+    editingId = null;
+    showView("board");
+    persist(p.name + " is on the board.", function(){ return sbUpsertPerson(p); });
+  };
+  document.getElementById("btn-cancel").onclick = function(){ editingId = null; showView("board"); };
+  document.getElementById("btn-delete").onclick = function(){
+    if(!editingId) return;
+    var nm = (state.people.filter(function(x){return x.id===editingId;})[0]||{}).name || "That entry";
+    var gone = editingId;
+    if(!window.confirm("Remove " + nm + " from the shared board? Everyone loses this entry.")) return;
+    state.people = state.people.filter(function(x){ return x.id !== gone; });
+    editingId = null;
+    showView("board");
+    persist(nm + " removed from the board.", function(){ return sbDeletePerson(gone); });
+  };
+
+  document.getElementById("btn-export").onclick = function(){
+    copyText(boardAsText(), "Standings copied. Paste them into the chat.");
+  };
+  document.getElementById("btn-export-json").onclick = function(){
+    copyText(JSON.stringify({v:1, people:state.people, settings:state.settings}), "Backup data copied.");
+  };
+  document.getElementById("btn-import").onclick = function(){
+    var raw = window.prompt("Paste backup data here. This replaces the current board.");
+    if(!raw) return;
+    try{
+      var parsed = JSON.parse(raw);
+      if(!parsed || !Array.isArray(parsed.people)) throw new Error("bad");
+      state.people = parsed.people;
+      state.settings = mergeSettings(parsed.settings);
+      showView("board");
+      var copy = state.people.slice();
+      persist("Board loaded from backup, pushing it up.", function(){
+        return Promise.all(copy.map(sbUpsertPerson)).then(function(){ return sbPutSettings(state.settings); });
+      });
+      renderRules();
+    }catch(e){ toast("That did not look like backup data."); }
+  };
+  document.getElementById("btn-reset").onclick = function(){
+    if(!window.confirm("Reset the weights and charge back rates to defaults for everyone? Entries stay.")) return;
+    state.settings = mergeSettings(null);
+    renderRules(); render(); saveLocal(); pushSettingsSoon();
+    toast("Rules reset to defaults.");
+  };
+  document.getElementById("btn-refresh").onclick = function(){
+    toast("Pulling the latest board.");
+    refresh(false).then(function(){ updateSyncNote(); });
+  };
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+loadState();
+wire();
+render();
+showView("board");
+setSync(0);
+
+/* First paint is the local cache, then the shared board lands on top. */
+refresh(true).then(function(){ updateSyncNote(); });
+
+setInterval(function(){
+  if(document.hidden) return;
+  if(syncing > 0) return;
+  if(!document.getElementById("view-entry").classList.contains("hidden")) return;
+  if(!document.getElementById("view-rules").classList.contains("hidden")) return;
+  refresh(true);
+}, POLL_MS);
+
+document.addEventListener("visibilitychange", function(){
+  if(!document.hidden && syncing === 0) refresh(true);
+});
+})();
+</script>
