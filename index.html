@@ -355,6 +355,10 @@ table.imp input{text-align:right}
             <input type="number" id="f-bw" min="30" max="250" step="0.5" value="80">
           </div>
           <div class="field">
+            <label for="f-height">Height (cm)</label>
+            <input type="number" id="f-height" min="120" max="230" step="1" value="178">
+          </div>
+          <div class="field">
             <label for="f-receipts">Receipts</label>
             <select id="f-receipts">
               <option value="verified">Verified by the group</option>
@@ -391,6 +395,20 @@ table.imp input{text-align:right}
               <label for="f-squat">Squat, best set (kg)</label>
               <input type="number" id="f-squat" min="0" max="500" step="2.5" value="110">
               <span class="hint">Full depth. Half squats do not count.</span>
+            </div>
+          </div>
+        </div>
+
+        <label class="gate">
+          <input type="checkbox" id="f-knows-fat">
+          <span class="gate-txt"><strong>I know my body fat percentage</strong><span>Scored as a band, so being too lean costs you the same as carrying too much. Leave this off and its weight is shared out over the lifts and the run instead of scoring you zero.</span></span>
+        </label>
+        <div class="gated" id="grp-fat" data-off="1" style="margin-bottom:18px">
+          <div class="fgrid">
+            <div class="field">
+              <label for="f-fat">Body fat, percent</label>
+              <input type="number" id="f-fat" min="2" max="60" step="0.1" value="18">
+              <span class="hint">From a scan, callipers or a smart scale. Eyeballing it in the mirror does not count.</span>
             </div>
           </div>
         </div>
@@ -689,27 +707,29 @@ function sbFetch(path, opts){
 }
 function sbPull(){
   return Promise.all([
-    sbFetch("ledger_people?select=id,name,data&order=id.asc"),
+    sbFetch("ledger_board?select=id,name,age,pillars,badges,receipts&order=id.asc"),
     sbFetch("ledger_settings?id=eq.1&select=data")
   ]).then(function(res){
     var people = (res[0] || []).map(function(row){
-      var d = row.data || {};
-      d.id = row.id; d.name = row.name;
-      return d;
+      return {
+        id: row.id, name: row.name, age: row.age,
+        pillars: row.pillars || {}, badges: row.badges || [],
+        receipts: row.receipts || "claimed"
+      };
     });
     var st = res[1] && res[1][0] && res[1][0].data;
     return {people:people, settings:(st && Object.keys(st).length) ? st : null};
   });
 }
-function sbUpsertPerson(p){
-  return sbFetch("ledger_people", {
+function sbUpsertRow(row){
+  return sbFetch("ledger_board", {
     method:"POST",
     headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
-    body: JSON.stringify({id:p.id, name:p.name, data:p})
+    body: JSON.stringify(row)
   });
 }
 function sbDeletePerson(id){
-  return sbFetch("ledger_people?id=eq." + encodeURIComponent(id), {
+  return sbFetch("ledger_board?id=eq." + encodeURIComponent(id), {
     method:"DELETE", headers:{Prefer:"return=minimal"}
   });
 }
@@ -893,6 +913,11 @@ var SQUAT_F = [[0.40,0],[0.60,20],[0.80,38],[1.00,55],[1.25,70],[1.50,85],[1.85,
 var RUN_M = [[900,100],[1050,92],[1200,82],[1350,70],[1500,58],[1680,44],[1920,28],[2280,12],[2700,0]];
 var RUN_F = [[1005,100],[1175,92],[1340,82],[1510,70],[1680,58],[1880,44],[2150,28],[2550,12],[3020,0]];
 
+/* Body fat percentage. Scored as a band, not lower-is-better: walking around
+   stripped to nothing is not health, and neither is carrying too much. */
+var FAT_M = [[3,55],[5,82],[7,97],[9,100],[12,95],[15,82],[18,68],[22,48],[26,30],[32,12],[40,0]];
+var FAT_F = [[11,55],[14,84],[17,97],[20,100],[24,92],[28,75],[32,55],[36,35],[42,15],[50,0]];
+
 /* Gaming. Solo win rate is a percentage, the other two are kill/death ratios. */
 var FORTNITE = [[0,0],[1,20],[3,40],[5,55],[8,70],[12,82],[16,91],[25,100]];
 var COD_KD   = [[0.40,0],[0.75,25],[1.00,45],[1.30,62],[1.60,75],[2.00,86],[2.50,94],[3.50,100]];
@@ -939,8 +964,35 @@ function scorePhysical(p){
     rows.push({lab:"5km", raw:"No run inside three months", pts:0, dq:true});
   }
 
-  var total = benchPts*0.30 + squatPts*0.35 + runPts*0.35;
-  return {score:clamp(total,0,100), rows:rows, strength:(benchPts+squatPts)/2, cardio:runPts};
+  /* Body fat is optional. Unknown redistributes its weight across the rest
+     rather than scoring zero, because not owning callipers is not a failing. */
+  var pool = [
+    {w:0.22, pts:benchPts},
+    {w:0.26, pts:squatPts},
+    {w:0.30, pts:runPts}
+  ];
+  var fatPts = null;
+  if(p.knowsBodyFat && n(p.bodyFatPct) > 0){
+    fatPts = lerp(n(p.bodyFatPct), female ? FAT_F : FAT_M);
+    pool.push({w:0.22, pts:fatPts});
+    var lean = bw * (1 - n(p.bodyFatPct)/100);
+    var ht = n(p.heightCm);
+    var bmi = ht > 0 ? bw / Math.pow(ht/100, 2) : 0;
+    rows.push({
+      lab:"Body composition",
+      raw: n(p.bodyFatPct)+"% body fat, "+lean.toFixed(1)+"kg lean" +
+           (ht > 0 ? " at "+Math.round(ht)+"cm, BMI "+bmi.toFixed(1) : ""),
+      pts: fatPts,
+      dq: fatPts < 40
+    });
+  } else {
+    rows.push({lab:"Body composition", raw:"Not measured, its weight goes to the other three", pts:0, skip:true});
+  }
+
+  var wsum = pool.reduce(function(a,x){ return a + x.w; }, 0);
+  var total = pool.reduce(function(a,x){ return a + x.pts * (x.w/wsum); }, 0);
+
+  return {score:clamp(total,0,100), rows:rows, strength:(benchPts+squatPts)/2, cardio:runPts, fat:fatPts};
 }
 
 function imputedTotal(p, S){
@@ -1164,6 +1216,8 @@ function scoreAll(p, S){
   if(!p.trainsNow) badges.push({t:"NOT IN TRAINING", c:"warn"});
   if(!p.ranRecently) badges.push({t:"NO RECENT 5K", c:"warn"});
   if(phy.strength >= 70 && phy.cardio <= 35 && p.ranRecently) badges.push({t:"BENCH ONLY", c:"note"});
+  if(phy.fat != null && phy.fat >= 90) badges.push({t:"LEAN", c:"good"});
+  if(phy.fat == null) badges.push({t:"BODY FAT UNKNOWN", c:"note"});
   if(fin.adjCash < 0) badges.push({t:"NEGATIVE CASH FLOW", c:"warn"});
   if(ind.phone.k === "family" || ind.laptop.k === "family") badges.push({t:"KIT NOT PAID FOR", c:"warn"});
   if(ind.score >= 90) badges.push({t:"FULLY INDEPENDENT", c:"good"});
@@ -1191,10 +1245,75 @@ var state = {v:1, people:[], settings:null};
 var editingId = null, sortBy = "total";
 var online = false, syncing = 0, lastError = "";
 
+/* Raw numbers live here and nowhere else. This browser only, never uploaded.
+   You can edit an entry exactly when you hold its raw numbers, which means
+   whoever types someone in owns that entry. */
+var owned = {}, tombstones = {};
+
+function loadOwned(){
+  try{ var s = localStorage.getItem("life-ledger-private"); if(s) owned = JSON.parse(s) || {}; }catch(e){ owned = {}; }
+  try{ var t = localStorage.getItem("life-ledger-removed"); if(t) tombstones = JSON.parse(t) || {}; }catch(e){ tombstones = {}; }
+  /* Carry over anything held from the older build, which mirrored raw data locally. */
+  try{
+    var old = localStorage.getItem("life-ledger");
+    if(old){
+      var o = JSON.parse(old);
+      (o.people || []).forEach(function(x){
+        if(x && x.id && (x.cashflowMonthly !== undefined || x.benchKg !== undefined)) owned[x.id] = x;
+      });
+      saveOwned();
+    }
+  }catch(e){}
+}
+function saveOwned(){
+  try{
+    localStorage.setItem("life-ledger-private", JSON.stringify(owned));
+    localStorage.setItem("life-ledger-removed", JSON.stringify(tombstones));
+  }catch(e){}
+}
+function isOwned(id){ return Object.prototype.hasOwnProperty.call(owned, id); }
+
+/* The only shape that ever goes to the server. */
+function publicRow(p, S){
+  var r = scoreAll(p, S), pil = {};
+  PILLAR_META.forEach(function(m){ pil[m.k] = Math.round(r.pillars[m.k].score * 10) / 10; });
+  return {
+    id: p.id,
+    name: String(p.name || "").slice(0, 60),
+    age: Math.round(n(p.age)) || null,
+    pillars: pil,
+    badges: r.badges,
+    receipts: p.receipts || "claimed"
+  };
+}
+
+/* Overall is recomputed from pillar scores, so changing the weights still
+   re-ranks the whole board without anyone's raw numbers being readable. */
+function totalFor(row, S){
+  var w = S.weights, sum = 0;
+  PILLAR_META.forEach(function(m){ sum += n(w[m.k]); });
+  sum = Math.max(sum, 1);
+  var weighted = 0;
+  PILLAR_META.forEach(function(m){ weighted += n((row.pillars || {})[m.k]) * (n(w[m.k]) / sum); });
+  var mult = RECEIPT_MULT[row.receipts] != null ? RECEIPT_MULT[row.receipts] : 0.88;
+  return clamp(weighted * mult, 0, 100);
+}
+
+/* Push your own entries up, which refreshes stale scores after a rules change
+   and restores them if the board was cleared. Never resurrects one you removed. */
+function republishOwned(){
+  var ids = Object.keys(owned).filter(function(id){ return !tombstones[id]; });
+  if(!ids.length) return Promise.resolve();
+  return Promise.all(ids.map(function(id){
+    return sbUpsertRow(publicRow(owned[id], state.settings)).catch(function(){});
+  }));
+}
+
 function defaultPerson(){
   return {
     id: "p" + Math.random().toString(36).slice(2,9),
-    name:"", age:27, sex:"m", bodyweightKg:80, receipts:"claimed",
+    name:"", age:27, sex:"m", bodyweightKg:80, heightCm:178,
+    knowsBodyFat:false, bodyFatPct:18, receipts:"claimed",
     trainsNow:true, sessionsPerWeek:4, benchKg:80, squatKg:110,
     ranRecently:true, run5kSeconds:1560,
     cashflowMonthly:6000, livingCostsMonthly:18000, liquidSavings:40000, netWorth:90000, badDebt:0,
@@ -1213,7 +1332,7 @@ function defaultPerson(){
 
 function loadState(){
   var local = null;
-  try{ var ls = localStorage.getItem("life-ledger"); if(ls) local = JSON.parse(ls); }catch(e){}
+  try{ var ls = localStorage.getItem("life-ledger-board"); if(ls) local = JSON.parse(ls); }catch(e){}
   state.people = (local && local.people) || [];
   state.settings = mergeSettings(local && local.settings);
 }
@@ -1226,7 +1345,8 @@ function mergeSettings(s){
   return out;
 }
 function saveLocal(){
-  try{ localStorage.setItem("life-ledger", JSON.stringify({v:1, people:state.people, settings:state.settings})); }catch(e){}
+  /* Only the public board cache. Raw numbers go through saveOwned instead. */
+  try{ localStorage.setItem("life-ledger-board", JSON.stringify({v:1, people:state.people, settings:state.settings})); }catch(e){}
 }
 
 function setSync(delta){
@@ -1291,10 +1411,10 @@ function render(){
     return;
   }
 
-  var scored = state.people.map(function(p){ return {p:p, r:scoreAll(p, S)}; });
+  var scored = state.people.map(function(row){ return {p:row, total:totalFor(row, S)}; });
   scored.sort(function(a,b){
-    if(sortBy === "total") return b.r.total - a.r.total;
-    return b.r.pillars[sortBy].score - a.r.pillars[sortBy].score;
+    if(sortBy === "total") return b.total - a.total;
+    return n((b.p.pillars||{})[sortBy]) - n((a.p.pillars||{})[sortBy]);
   });
 
   var html = "";
@@ -1307,8 +1427,8 @@ function render(){
       html += '<div class="wcard ' + (i===0?"first":"") + ew.cls + '"' + ew.style + '>' +
         '<span class="place">' + places[i] + '</span>' +
         '<div class="who">' + esc(row.p.name || "Unnamed") + '</div>' +
-        '<div class="tot">' + row.r.total.toFixed(1) + '<span> / 100</span></div>' +
-        '<div class="wbadges">' + row.r.badges.slice(0,3).map(badgeHtml).join("") + '</div>' +
+        '<div class="tot">' + row.total.toFixed(1) + '<span> / 100</span></div>' +
+        '<div class="wbadges">' + (row.p.badges||[]).slice(0,3).map(badgeHtml).join("") + '</div>' +
       '</div>';
     });
     html += '</div></div>';
@@ -1321,25 +1441,27 @@ function render(){
     '</select></div><div class="ledger">';
 
   scored.forEach(function(row, i){
-    var p = row.p, r = row.r;
-    var shown = sortBy === "total" ? r.total : r.pillars[sortBy].score;
+    var p = row.p;
+    var shown = sortBy === "total" ? row.total : n((p.pillars||{})[sortBy]);
     var er = entrance(Math.min(i*45,360));
+    var yours = isOwned(p.id);
     html += '<div class="lrow ' + (i===0?"top":"") + er.cls + '" data-id="' + p.id + '"' + er.style + '>' +
       '<button class="lrow-btn" aria-expanded="false">' +
         '<span class="lrank num">' + (i+1) + '</span>' +
         '<span><span class="lname">' + esc(p.name || "Unnamed") + '</span>' +
-          '<span class="lmeta"><span class="age">' + Math.round(n(p.age)) + 'y &middot; ' + n(p.bodyweightKg) + 'kg</span>' +
-          r.badges.slice(0,3).map(badgeHtml).join("") + '</span></span>' +
+          '<span class="lmeta"><span class="age">' + (p.age ? p.age + 'y' : 'age not given') + '</span>' +
+          (yours ? '<span class="badge badge-brass">YOURS</span>' : '') +
+          (p.badges||[]).slice(0,3).map(badgeHtml).join("") + '</span></span>' +
         '<span class="lscore">' + shown.toFixed(1) + '</span>' +
       '</button>' +
       '<div class="pillars">' + PILLAR_META.map(function(m){
-        var v = r.pillars[m.k].score;
+        var v = n((p.pillars||{})[m.k]);
         var cls = v >= 70 ? "brass" : (v < 35 ? "low" : "");
         return '<div class="pil"><div class="pil-top"><span class="pil-lab">' + m.lab + '</span>' +
           '<span class="pil-val">' + v.toFixed(0) + '</span></div>' +
           '<div class="track"><div class="fill ' + cls + '" style="width:' + v.toFixed(1) + '%"></div></div></div>';
       }).join("") + '</div>' +
-      '<div class="detail">' + detailHtml(p, r, S) + '</div>' +
+      '<div class="detail">' + detailHtml(p, S) + '</div>' +
     '</div>';
   });
 
@@ -1379,38 +1501,59 @@ function esc(s){
   });
 }
 
-function detailHtml(p, r, S){
-  var w = S.weights;
-  var sum = 0;
+function detailHtml(row, S){
+  var w = S.weights, sum = 0;
   PILLAR_META.forEach(function(m){ sum += n(w[m.k]); });
   sum = Math.max(sum, 1);
+
+  /* The full breakdown can only be built from raw numbers, and those exist
+     solely on the phone of whoever entered them. */
+  var raw = owned[row.id] || null;
+  var r = raw ? scoreAll(raw, S) : null;
+
   var html = '<div class="dgrid">';
   PILLAR_META.forEach(function(m){
-    var pil = r.pillars[m.k];
-    var share = (n(w[m.k])/sum*100).toFixed(0);
-    html += '<div class="dcard"><h3>' + m.full + ' <span style="color:var(--faint);font-size:10px">' + share + '% weight</span> <b>' + pil.score.toFixed(1) + '</b></h3>';
-    pil.rows.forEach(function(row){
-      html += '<div class="drow' + (row.dq ? " dq" : "") + '">' +
-        '<span class="drow-lab">' + esc(row.lab) + '</span>' +
-        '<span class="drow-pts">' + (row.pts < 0 ? "" : "") + row.pts.toFixed(0) + '</span>' +
-        '<span class="drow-raw">' + esc(row.raw) + '</span></div>';
-    });
+    var share = (n(w[m.k]) / sum * 100).toFixed(0);
+    var score = r ? r.pillars[m.k].score : n((row.pillars || {})[m.k]);
+    html += '<div class="dcard"><h3>' + m.full +
+            ' <span style="color:var(--faint);font-size:10px">' + share + '% weight</span> <b>' +
+            score.toFixed(1) + '</b></h3>';
+    if(r){
+      r.pillars[m.k].rows.forEach(function(x){
+        html += '<div class="drow' + (x.dq ? " dq" : "") + '">' +
+          '<span class="drow-lab">' + esc(x.lab) + '</span>' +
+          '<span class="drow-pts"' + (x.skip ? ' style="color:var(--faint)"' : '') + '>' +
+            (x.skip ? '&ndash;' : x.pts.toFixed(0)) + '</span>' +
+          '<span class="drow-raw">' + esc(x.raw) + '</span></div>';
+      });
+    } else {
+      html += '<div class="drow"><span class="drow-lab" style="color:var(--faint)">Private</span>' +
+              '<span class="drow-pts" style="color:var(--faint)">&middot;</span>' +
+              '<span class="drow-raw">Scored, not shown</span></div>';
+    }
     html += '</div>';
   });
   html += '</div>';
 
-  var fin = r.pillars.financial;
-  if(fin.imputed.total > 0){
-    html += '<div class="dnote"><b>Charged back before scoring:</b> ' +
-      fin.imputed.parts.map(function(x){ return esc(x.t) + " " + money(x.v, S.currency); }).join(", ") +
-      '. You said ' + money(fin.rawCash, S.currency) + ' was left at month end, so the honest figure is ' +
-      money(fin.adjCash, S.currency) + '.</div>';
+  if(r){
+    var fin = r.pillars.financial;
+    if(fin.imputed.total > 0){
+      html += '<div class="dnote"><b>Charged back before scoring:</b> ' +
+        fin.imputed.parts.map(function(x){ return esc(x.t) + " " + money(x.v, S.currency); }).join(", ") +
+        '. You said ' + money(fin.rawCash, S.currency) + ' was left at month end, so the honest figure is ' +
+        money(fin.adjCash, S.currency) + '.</div>';
+    }
+    if(r.mult < 1){
+      html += '<div class="dnote"><b>Receipts haircut:</b> scored ' + r.weighted.toFixed(1) +
+        ' before evidence, ' + r.total.toFixed(1) + ' after a ' + Math.round((1 - r.mult) * 100) +
+        '% deduction for unproven numbers.</div>';
+    }
+    html += '<div class="dnote">These numbers are on this device only. Nobody else on the board can read them.</div>';
+    html += '<div class="dact"><button class="btn btn-sm" data-edit="' + row.id + '">Edit these numbers</button></div>';
+  } else {
+    html += '<div class="dnote"><b>' + esc(row.name || "This entry") +
+      ' keeps their own numbers.</b> Only the pillar scores above are on the board. The bench, the cash flow, the body fat, all of it stays on their phone and was never uploaded, so nobody can read it here. Ask them in the chat.</div>';
   }
-  if(r.mult < 1){
-    html += '<div class="dnote"><b>Receipts haircut:</b> scored ' + r.weighted.toFixed(1) +
-      ' before evidence, ' + r.total.toFixed(1) + ' after a ' + Math.round((1-r.mult)*100) + '% deduction for unproven numbers.</div>';
-  }
-  html += '<div class="dact"><button class="btn btn-sm" data-edit="' + p.id + '">Edit these numbers</button></div>';
   return html;
 }
 
@@ -1428,11 +1571,15 @@ function buildBills(){
 }
 
 function readForm(){
-  var p = editingId ? JSON.parse(JSON.stringify(state.people.filter(function(x){return x.id===editingId;})[0])) : defaultPerson();
+  var p = (editingId && owned[editingId]) ? JSON.parse(JSON.stringify(owned[editingId])) : defaultPerson();
+  if(editingId) p.id = editingId;
   function v(id){ return document.getElementById(id).value; }
   function c(id){ return document.getElementById(id).checked; }
   p.name = v("f-name").trim();
-  p.age = n(v("f-age")); p.sex = v("f-sex"); p.bodyweightKg = n(v("f-bw")); p.receipts = v("f-receipts");
+  p.age = n(v("f-age")); p.sex = v("f-sex"); p.bodyweightKg = n(v("f-bw"));
+  p.heightCm = n(v("f-height"));
+  p.knowsBodyFat = c("f-knows-fat"); p.bodyFatPct = n(v("f-fat"));
+  p.receipts = v("f-receipts");
   p.trainsNow = c("f-trains"); p.sessionsPerWeek = n(v("f-sessions"));
   p.benchKg = n(v("f-bench")); p.squatKg = n(v("f-squat"));
   p.ranRecently = c("f-ran"); p.run5kSeconds = parseTime(v("f-5k"));
@@ -1457,7 +1604,10 @@ function readForm(){
 function writeForm(p){
   function s(id, val){ document.getElementById(id).value = val; }
   function ck(id, val){ document.getElementById(id).checked = !!val; }
-  s("f-name", p.name); s("f-age", p.age); s("f-sex", p.sex); s("f-bw", p.bodyweightKg); s("f-receipts", p.receipts);
+  s("f-name", p.name); s("f-age", p.age); s("f-sex", p.sex); s("f-bw", p.bodyweightKg);
+  s("f-height", p.heightCm == null ? 178 : p.heightCm);
+  ck("f-knows-fat", p.knowsBodyFat); s("f-fat", p.bodyFatPct == null ? 18 : p.bodyFatPct);
+  s("f-receipts", p.receipts);
   ck("f-trains", p.trainsNow); s("f-sessions", p.sessionsPerWeek); s("f-bench", p.benchKg); s("f-squat", p.squatKg);
   ck("f-ran", p.ranRecently); s("f-5k", fmtTime(p.run5kSeconds));
   s("f-cashflow", p.cashflowMonthly); s("f-costs", p.livingCostsMonthly);
@@ -1488,7 +1638,7 @@ function syncGates(){
   document.getElementById("grp-run").setAttribute("data-off", ran ? "0" : "1");
   document.getElementById("dq-run").setAttribute("data-on", ran ? "0" : "1");
 
-  [["f-plays-fortnite","grp-fortnite"],["f-plays-cod","grp-cod"],["f-plays-r6","grp-r6"]].forEach(function(g){
+  [["f-knows-fat","grp-fat"],["f-plays-fortnite","grp-fortnite"],["f-plays-cod","grp-cod"],["f-plays-r6","grp-r6"]].forEach(function(g){
     document.getElementById(g[1]).setAttribute("data-off", document.getElementById(g[0]).checked ? "0" : "1");
   });
 
@@ -1504,8 +1654,12 @@ function liveScore(){
 }
 
 function openEntry(id){
+  if(id && !isOwned(id)){
+    toast("Those numbers are on their phone, not yours. Only whoever entered them can edit them.");
+    return;
+  }
   editingId = id;
-  var p = id ? state.people.filter(function(x){return x.id===id;})[0] : defaultPerson();
+  var p = id ? owned[id] : defaultPerson();
   document.getElementById("form-title").textContent = id ? "Editing " + (p.name || "entry") : "New Entry";
   document.getElementById("btn-delete").classList.toggle("hidden", !id);
   writeForm(p);
@@ -1567,16 +1721,15 @@ function updateSyncNote(){
 
 function boardAsText(){
   var S = state.settings;
-  var scored = state.people.map(function(p){ return {p:p, r:scoreAll(p,S)}; })
-    .sort(function(a,b){ return b.r.total - a.r.total; });
+  var scored = state.people.map(function(row){ return {p:row, total:totalFor(row,S)}; })
+    .sort(function(a,b){ return b.total - a.total; });
   var lines = ["THE LIFE LEDGER", ""];
   scored.forEach(function(row, i){
-    var r = row.r;
-    lines.push((i+1) + ". " + (row.p.name || "Unnamed") + "  " + r.total.toFixed(1));
+    lines.push((i+1) + ". " + (row.p.name || "Unnamed") + "  " + row.total.toFixed(1));
     lines.push("   " + PILLAR_META.map(function(m){
-      return m.lab + " " + r.pillars[m.k].score.toFixed(0);
+      return m.lab + " " + n((row.p.pillars||{})[m.k]).toFixed(0);
     }).join("  "));
-    var b = r.badges.filter(function(x){return x.c==="warn";}).map(function(x){return x.t;});
+    var b = (row.p.badges||[]).filter(function(x){return x.c==="warn";}).map(function(x){return x.t;});
     if(b.length) lines.push("   " + b.join(", "));
   });
   return lines.join("\n");
@@ -1634,7 +1787,7 @@ function wire(){
   fillSelect("f-field", FIELDS);
   buildBills();
 
-  ["f-trains","f-ran","f-plays-fortnite","f-plays-cod","f-plays-r6","f-nqf"].forEach(function(id){
+  ["f-trains","f-ran","f-knows-fat","f-plays-fortnite","f-plays-cod","f-plays-r6","f-nqf"].forEach(function(id){
     document.getElementById(id).addEventListener("change", function(){ syncGates(); liveScore(); });
   });
   [["f-purpose","o-purpose"],["f-stress","o-stress"],["f-rel","o-rel"]].forEach(function(pair){
@@ -1650,21 +1803,32 @@ function wire(){
   document.getElementById("btn-save").onclick = function(){
     var p = readForm();
     if(!p.name){ toast("Give this entry a name first."); document.getElementById("f-name").focus(); return; }
-    if(editingId){
-      state.people = state.people.map(function(x){ return x.id === editingId ? p : x; });
-    } else {
-      state.people.push(p);
-    }
+
+    owned[p.id] = p;              /* raw stays here */
+    delete tombstones[p.id];
+    saveOwned();
+
+    var row = publicRow(p, state.settings);   /* scores only leave */
+    var found = false;
+    state.people = state.people.map(function(x){
+      if(x.id === row.id){ found = true; return row; }
+      return x;
+    });
+    if(!found) state.people.push(row);
+
     editingId = null;
     showView("board");
-    persist(p.name + " is on the board.", function(){ return sbUpsertPerson(p); });
+    persist(p.name + " is on the board. Only the scores went up.", function(){ return sbUpsertRow(row); });
   };
   document.getElementById("btn-cancel").onclick = function(){ editingId = null; showView("board"); };
   document.getElementById("btn-delete").onclick = function(){
     if(!editingId) return;
-    var nm = (state.people.filter(function(x){return x.id===editingId;})[0]||{}).name || "That entry";
     var gone = editingId;
+    var nm = (owned[gone] || {}).name || "That entry";
     if(!window.confirm("Remove " + nm + " from the shared board? Everyone loses this entry.")) return;
+    delete owned[gone];
+    tombstones[gone] = 1;
+    saveOwned();
     state.people = state.people.filter(function(x){ return x.id !== gone; });
     editingId = null;
     showView("board");
@@ -1675,20 +1839,32 @@ function wire(){
     copyText(boardAsText(), "Standings copied. Paste them into the chat.");
   };
   document.getElementById("btn-export-json").onclick = function(){
-    copyText(JSON.stringify({v:1, people:state.people, settings:state.settings}), "Backup data copied.");
+    var mineList = Object.keys(owned).map(function(k){ return owned[k]; });
+    if(!mineList.length){ toast("You do not hold anyone's numbers on this device yet."); return; }
+    copyText(JSON.stringify({v:2, mine:mineList, settings:state.settings}),
+             "Your own numbers copied. Keep it safe, it is the raw data.");
   };
   document.getElementById("btn-import").onclick = function(){
     var raw = window.prompt("Paste backup data here. This replaces the current board.");
     if(!raw) return;
     try{
       var parsed = JSON.parse(raw);
-      if(!parsed || !Array.isArray(parsed.people)) throw new Error("bad");
-      state.people = parsed.people;
-      state.settings = mergeSettings(parsed.settings);
+      var list = parsed && (parsed.mine || parsed.people);
+      if(!list || !Array.isArray(list)) throw new Error("bad");
+      list.forEach(function(x){
+        if(x && x.id){ owned[x.id] = x; delete tombstones[x.id]; }
+      });
+      saveOwned();
+      if(parsed.settings) state.settings = mergeSettings(parsed.settings);
+      var rows = Object.keys(owned).map(function(k){ return publicRow(owned[k], state.settings); });
+      rows.forEach(function(row){
+        var found = false;
+        state.people = state.people.map(function(x){ if(x.id===row.id){found=true; return row;} return x; });
+        if(!found) state.people.push(row);
+      });
       showView("board");
-      var copy = state.people.slice();
-      persist("Board loaded from backup, pushing it up.", function(){
-        return Promise.all(copy.map(sbUpsertPerson)).then(function(){ return sbPutSettings(state.settings); });
+      persist("Restored " + list.length + " entry(s) onto this device.", function(){
+        return Promise.all(rows.map(sbUpsertRow)).then(function(){ return sbPutSettings(state.settings); });
       });
       renderRules();
     }catch(e){ toast("That did not look like backup data."); }
@@ -1709,13 +1885,17 @@ function wire(){
    BOOT
    ============================================================ */
 loadState();
+loadOwned();
 wire();
 render();
 showView("board");
 setSync(0);
 
 /* First paint is the local cache, then the shared board lands on top. */
-refresh(true).then(function(){ updateSyncNote(); });
+refresh(true)
+  .then(function(){ return republishOwned(); })
+  .then(function(){ return online ? refresh(true) : null; })
+  .then(function(){ updateSyncNote(); });
 
 setInterval(function(){
   if(document.hidden) return;
