@@ -282,7 +282,10 @@ table.imp input{text-align:right}
 .hidden{display:none !important}
 
 @keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
-.lrow,.wcard{animation:rise .42s both cubic-bezier(.2,.7,.3,1)}
+/* Rows are visible by default. The entrance is added only when the page is
+   actually on screen, because a hidden tab never advances the animation and
+   fill-mode would otherwise pin the content at opacity 0. */
+.anim-in{animation:rise .42s both cubic-bezier(.2,.7,.3,1)}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
@@ -1300,7 +1303,8 @@ function render(){
     html += '<div class="sect" style="margin-top:4px"><div class="sect-head"><h2>The weigh in</h2><div class="rule"></div></div><div class="weighin">';
     scored.slice(0,3).forEach(function(row, i){
       var places = ["First","Second","Third"];
-      html += '<div class="wcard ' + (i===0?"first":"") + '" style="animation-delay:' + (i*70) + 'ms">' +
+      var ew = entrance(i*70);
+      html += '<div class="wcard ' + (i===0?"first":"") + ew.cls + '"' + ew.style + '>' +
         '<span class="place">' + places[i] + '</span>' +
         '<div class="who">' + esc(row.p.name || "Unnamed") + '</div>' +
         '<div class="tot">' + row.r.total.toFixed(1) + '<span> / 100</span></div>' +
@@ -1319,7 +1323,8 @@ function render(){
   scored.forEach(function(row, i){
     var p = row.p, r = row.r;
     var shown = sortBy === "total" ? r.total : r.pillars[sortBy].score;
-    html += '<div class="lrow ' + (i===0?"top":"") + '" data-id="' + p.id + '" style="animation-delay:' + Math.min(i*45,360) + 'ms">' +
+    var er = entrance(Math.min(i*45,360));
+    html += '<div class="lrow ' + (i===0?"top":"") + er.cls + '" data-id="' + p.id + '"' + er.style + '>' +
       '<button class="lrow-btn" aria-expanded="false">' +
         '<span class="lrank num">' + (i+1) + '</span>' +
         '<span><span class="lname">' + esc(p.name || "Unnamed") + '</span>' +
@@ -1363,6 +1368,10 @@ function render(){
   });
 }
 
+function entrance(ms){
+  if(document.hidden) return {cls:"", style:""};
+  return {cls:" anim-in", style:' style="animation-delay:' + ms + 'ms"'};
+}
 function badgeHtml(b){ return '<span class="badge badge-' + b.c + '">' + b.t + '</span>'; }
 function esc(s){
   return String(s).replace(/[&<>"']/g, function(c){
